@@ -12,7 +12,9 @@ setup(
         'parametric_protein_scaffold_design',
     ],
     install_requires=[
+        'numpy',
         'matplotlib',
+        'docopt',
     ],
     entry_points={
         'console_scripts': [

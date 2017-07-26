@@ -42,6 +42,7 @@ def extract_natural_sheet_info(pdb_path):
 
     return deviations_degree, rama_scores, nearest_neighbor_distances, all_hb_scores
 
+
 if __name__ == '__main__':
 
     pyrosetta.init()
@@ -50,4 +51,4 @@ if __name__ == '__main__':
     deviations_degree, rama_scores, nearest_neighbor_distances, all_hb_scores = \
         extract_natural_sheet_info(pdb_path)
 
-    
+    PPSD.plot.plot_histogram(deviations_degree, 'N-CA-C angle deviations (degree)')
