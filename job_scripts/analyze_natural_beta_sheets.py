@@ -1,5 +1,8 @@
 #!/usr/bin/env python2.7
 
+import os
+import sys
+
 import numpy as np
 
 import pyrosetta
@@ -42,13 +45,54 @@ def extract_natural_sheet_info(pdb_path):
 
     return deviations_degree, rama_scores, nearest_neighbor_distances, all_hb_scores
 
-
-if __name__ == '__main__':
-
-    pyrosetta.init()
-
-    pdb_path = 'test_sheet.pdb'
+def save_one_natural_sheet_info(data_path, pdb_path):
+    '''Save the statistics of one beta sheet into data files.'''
+    # Extract the info
+    
     deviations_degree, rama_scores, nearest_neighbor_distances, all_hb_scores = \
         extract_natural_sheet_info(pdb_path)
 
-    PPSD.plot.plot_histogram(deviations_degree, 'N-CA-C angle deviations (degree)')
+    # Save the info into different files 
+
+    if len(deviations_degree) > 0:
+        PPSD.io.safe_append(os.path.join(data_path, 'deviations_degree.txt'),
+                '\n'.join(["{0:0.2f}".format(x) for x in deviations_degree]) + '\n')
+
+    if len(rama_scores) > 0:
+        PPSD.io.safe_append(os.path.join(data_path, 'rama_scores.txt'),
+                '\n'.join(["{0:0.2f}".format(x) for x in rama_scores]) + '\n')
+
+    if len(nearest_neighbor_distances) > 0:
+        PPSD.io.safe_append(os.path.join(data_path, 'nearest_neighbor_distances.txt'),
+                '\n'.join(["{0:0.2f}".format(x) for x in nearest_neighbor_distances]) + '\n')
+
+    if len(all_hb_scores) > 0:
+        PPSD.io.safe_append(os.path.join(data_path, 'all_hb_scores.txt'),
+                '\n'.join(["{0:0.2f}".format(x) for x in all_hb_scores]) + '\n')
+
+def save_info_of_natrual_sheets_from_cath(data_path, sheets_path, num_jobs, job_id):
+    '''Save information of natural sheets from the cath database.'''
+    my_super_families = PPSD.job_distributors.SGEJobDistributor.get_sub_list(
+            os.listdir(sheets_path), num_jobs, job_id)
+
+    for sf in my_super_families:
+        for p in os.listdir(os.path.join(sheets_path, sf)):
+            save_one_natural_sheet_info(data_path, os.path.join(sheets_path, sf, p))
+
+
+if __name__ == '__main__':
+
+    data_path = sys.argv[1]
+    input_path = sys.argv[2] 
+
+    num_jobs = 1
+    job_id = 0
+    if len(sys.argv) > 4:
+        num_jobs = int(sys.argv[3])
+        job_id = int(sys.argv[4]) - 1
+
+    pyrosetta.init()
+
+    save_info_of_natrual_sheets_from_cath(data_path, input_path, num_jobs, job_id)
+
+    #PPSD.plot.plot_histogram(deviations_degree, 'N-CA-C angle deviations (degree)')
