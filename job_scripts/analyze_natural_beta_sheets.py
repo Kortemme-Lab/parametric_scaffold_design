@@ -98,10 +98,11 @@ def plot_natural_sheet_info(data_path):
 if __name__ == '__main__':
 
     data_path = sys.argv[1]
-    input_path = sys.argv[2] 
-
+    input_path = sys.argv[2] if len(sys.argv) > 2 else sys.argv[1] 
+    
     num_jobs = 1
     job_id = 0
+    
     if len(sys.argv) > 4:
         num_jobs = int(sys.argv[3])
         job_id = int(sys.argv[4]) - 1
