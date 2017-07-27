@@ -20,3 +20,9 @@ def safe_append(file_name, string):
     with lock:
         with open(file_name, 'a+') as f:
             f.write(string)
+
+def ll_to_tsv(file_name, ll):
+    '''Save a list of list into a tsv file.'''
+    with open(file_name, 'w') as f:
+        for l in ll:
+            f.write('\t'.join([repr(x) for x in l]) + '\n')
