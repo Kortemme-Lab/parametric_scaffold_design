@@ -107,7 +107,7 @@ if __name__ == '__main__':
         num_jobs = int(sys.argv[3])
         job_id = int(sys.argv[4]) - 1
 
-    #pyrosetta.init()
-    #save_info_of_natrual_sheets_from_cath(data_path, input_path, num_jobs, job_id)
+    pyrosetta.init()
+    save_info_of_natrual_sheets_from_cath(data_path, input_path, num_jobs, job_id)
 
-    plot_natural_sheet_info(data_path)
+    #plot_natural_sheet_info(data_path)
