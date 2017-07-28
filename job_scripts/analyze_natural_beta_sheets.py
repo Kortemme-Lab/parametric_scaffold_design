@@ -48,9 +48,12 @@ def extract_natural_sheet_info(pdb_path):
 def save_one_natural_sheet_info(data_path, pdb_path):
     '''Save the statistics of one beta sheet into data files.'''
     # Extract the info
-    
-    deviations_degree, rama_scores, nearest_neighbor_distances, all_hb_scores = \
-        extract_natural_sheet_info(pdb_path)
+
+    try:
+        deviations_degree, rama_scores, nearest_neighbor_distances, all_hb_scores = \
+            extract_natural_sheet_info(pdb_path)
+    except:
+        return
 
     # Save the info into different files 
 
