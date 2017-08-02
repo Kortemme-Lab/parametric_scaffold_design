@@ -13,15 +13,15 @@ import parametric_protein_scaffold_design as PPSD
 from rosetta.protocols.parametric_design import *
 
 
-def make_sheets(data_path, num_strands, strand_length, crease_strand_angles_degree, folding_angles_degree):
+def make_sheets(data_path, strand_directions, strand_length, crease_strand_angles_degree, folding_angles_degree):
     '''Make multiple beta sheets and save each into a separate directory.'''
     for i, csa in enumerate(sorted(crease_strand_angles_degree)):
         for j, fa in enumerate(sorted(folding_angles_degree)):
             sheet_path = os.path.join(data_path, '_'.join([str(i), str(j), str(int(csa)), str(int(fa))]))
-            make_a_sheet(sheet_path, num_strands, strand_length, np.radians(csa), np.radians(fa))
+            make_a_sheet(sheet_path, strand_directions, strand_length, np.radians(csa), np.radians(fa))
 
 
-def make_a_sheet(sheet_path, num_strands, strand_length, crease_strand_angle, folding_angle):
+def make_a_sheet(sheet_path, strand_directions, strand_length, crease_strand_angle, folding_angle):
     '''Make a beta sheet and record the statistics of this sheet.'''
     ## Create directory
     if not os.path.exists(sheet_path):
@@ -29,7 +29,7 @@ def make_a_sheet(sheet_path, num_strands, strand_length, crease_strand_angle, fo
 
     ## Build the sheet
 
-    skeleton = make_uniformly_curved_rectangular_antiparallel_skeleton(num_strands,
+    skeleton = make_uniformly_curved_rectangular_skeleton(strand_directions,
                 strand_length, crease_strand_angle, folding_angle)
 
     psd = ParametricSheetDesigner()
@@ -43,12 +43,12 @@ def make_a_sheet(sheet_path, num_strands, strand_length, crease_strand_angle, fo
    
     ## Evaluate the quality of the sheet 
  
-    evaluate_sheet_quality(sheet_path, sheet, num_strands, strand_length, skeleton)
+    evaluate_sheet_quality(sheet_path, sheet, len(strand_directions), strand_length, skeleton)
 
     # Save the information of the sheet into a JSON file
 
     with open(os.path.join(sheet_path, 'info.json'), 'w') as f:
-        json.dump({'num_strands': num_strands,
+        json.dump({'strand_directions': list(strand_directions),
                    'strand_length' : strand_length,
                    'crease_strand_angles_degree' : np.degrees(crease_strand_angle),
                    'folding_angles_degree' : np.degrees(folding_angle)}, f)
@@ -238,8 +238,13 @@ if __name__ == '__main__':
         num_jobs = int(sys.argv[3])
         job_id = int(sys.argv[4]) - 1
 
-    #pyrosetta.init()
+    pyrosetta.init()
 
-    #make_sheets(data_path, 3, 7, [10, 20, 30, 40, 50], [10, 20, 30, 40, 50])
+    strand_directions = rosetta.utility.vector1_bool()
+    strand_directions.append(True)
+    strand_directions.append(True)
+    strand_directions.append(True)
 
-    make_summary_figures(data_path)
+    make_sheets(data_path, strand_directions, 7, [10, 20, 30, 40, 50], [10, 20, 30, 40, 50])
+
+    #make_summary_figures(data_path)
