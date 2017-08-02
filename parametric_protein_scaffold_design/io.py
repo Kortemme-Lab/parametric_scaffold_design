@@ -26,3 +26,18 @@ def ll_to_tsv(file_name, ll):
     with open(file_name, 'w') as f:
         for l in ll:
             f.write('\t'.join([repr(x) for x in l]) + '\n')
+
+def tsv_to_ll(file_name, cast_funs):
+    '''Read a tsv file into a list of file. A list of type casting
+    functions will be applied to each line of the file.'''
+    ll = []
+
+    with open(file_name, 'r') as f:
+        for line in f.readlines():
+            ll.append([])
+            sline = line.split()
+
+            for i in range(len(cast_funs)):
+                ll[-1].append(cast_funs[i](sline[i]))
+
+    return ll
