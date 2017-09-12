@@ -1,8 +1,12 @@
 import os
 import io
+import json
 from datetime import timedelta
 
 from flufl.lock import Lock
+
+import pyrosetta
+import pyrosetta.rosetta as rosetta
 
 
 def safe_append(file_name, string):
@@ -41,3 +45,36 @@ def tsv_to_ll(file_name, cast_funs):
                 ll[-1].append(cast_funs[i](sline[i]))
 
     return ll
+
+def write_rigid_body_transformation_to_file(T, fout):
+    '''Write a rigid body transformation T into a json file.'''
+    with open(fout, 'w') as f:
+        json.dump([[T.xx(), T.yx(), T.zx(), T.x()],
+            [T.xy(), T.yy(), T.zy(), T.y()],
+            [T.xz(), T.yz(), T.zz(), T.z()]], f)
+    
+def load_rigid_body_transformation_from_file(fin):
+    '''Load a rigid body transformation from a json file.'''
+    T = rosetta.numeric.xyzTransform_double_t()
+  
+    with open(fin, 'r') as f:
+        l = json.load(f)
+        
+        T.R.xx = l[0][0]
+        T.R.yx = l[0][1]
+        T.R.zx = l[0][2]
+        T.t.x = l[0][3]
+
+        T.R.xy = l[1][0]
+        T.R.yy = l[1][1]
+        T.R.zy = l[1][2]
+        T.t.y = l[1][3]
+
+        T.R.xz = l[2][0]
+        T.R.yz = l[2][1]
+        T.R.zz = l[2][2]
+        T.t.z = l[2][3]
+
+    return T
+
+
