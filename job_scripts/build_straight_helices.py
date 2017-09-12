@@ -8,6 +8,7 @@ import parametric_protein_scaffold_design as PPSD
 
 from rosetta.protocols.parametric_design import *
 
+
 def make_straight_helices(data_path, lengthes):
     '''Make a set of straight helices with different lengthes.'''
     
@@ -26,7 +27,7 @@ def make_a_straight_helix(helix_path, helix_length):
 
     directions = pyrosetta.rosetta.utility.vector1_numeric_xyzVector_double_t()
     
-    for i in range(helix_length):
+    for i in range(helix_length - 2):
         directions.append(rosetta.numeric.xyzVector_double_t(0, 0, 1))
 
     phd.set_directions(directions)
