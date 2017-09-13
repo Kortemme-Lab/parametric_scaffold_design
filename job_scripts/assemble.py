@@ -79,6 +79,31 @@ def assemble(pose, movable_jumps, connections, seqpos_map):
 
     ssa.apply(pose)
 
+def assemble_from_files(pdb_file1, pdb_file2, transformation_file, res1, res2, movable_jumps, connections):
+    '''Assemble two secondary structures given the PDB files, transformation
+    file, transformation residues, movable jumps and connections.
+    Return the assembled pose.
+    '''
+    pose1 = rosetta.core.pose.Pose()
+    rosetta.core.import_pose.pose_from_file(pose1, pdb_file1)
+    pose2 = rosetta.core.pose.Pose()
+    rosetta.core.import_pose.pose_from_file(pose2, pdb_file2)
+
+    seqpos_map = make_seqpos_map(pose1, pose2)
+
+    T = PPSD.io.load_rigid_body_transformation_from_file(transformation_file)
+    pre_assemble(pose1, pose2, res1, res2, T)
+    
+    assemble(pose1, movable_jumps, connections, seqpos_map)
+
+    return pose1
+
+def sheet_helix_assembly(sheet_path, helix_path, out_path):
+    '''Assemble a sheet and a helix given their input pathes and 
+    the output path.
+    '''
+    pass
+
 
 if __name__ == '__main__':
 
@@ -88,24 +113,15 @@ if __name__ == '__main__':
    
     pdb_file1 = 'data/antiparallel_sheets/4_0_50_10/sheet.pdb'
     pdb_file2 = 'data/straight_helices/10/helix.pdb'
-
-    pose1 = rosetta.core.pose.Pose()
-    rosetta.core.import_pose.pose_from_file(pose1, pdb_file1)
-    pose2 = rosetta.core.pose.Pose()
-    rosetta.core.import_pose.pose_from_file(pose2, pdb_file2)
-
-    seqpos_map = make_seqpos_map(pose1, pose2)
-
-    T = PPSD.io.load_rigid_body_transformation_from_file('data/test_assemble/T_C34_A11.json')
-
-    pre_assemble(pose1, pose2, ('B', 10), ('A', 5), T)
-    
-    pose1.dump_pdb('data/test_assemble/after_pre_assemble.pdb')
-
+    transformation_file = 'data/test_assemble/T_C34_A11.json'
+    res1 = ('B', 10)
+    res2 = ('A', 5)
+    movable_jumps = [3]
     connections = [((1, 'A', 7), (1, 'B', 8), 4),
                    ((1, 'B', 14), (1,'C', 15), 4),
                    ((2, 'A', 10), (1,'A', 1), 4)]
 
-    assemble(pose1, [3], connections, seqpos_map)
 
-    pose1.dump_pdb('data/test_assemble/after_assemble.pdb')
+    pose = assemble_from_files(pdb_file1, pdb_file2, transformation_file, res1, res2, movable_jumps, connections)
+
+    pose.dump_pdb('data/test_assemble/after_assemble.pdb')
