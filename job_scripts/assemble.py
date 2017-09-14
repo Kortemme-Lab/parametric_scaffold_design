@@ -82,10 +82,11 @@ def assemble(pose, movable_jumps, connections, seqpos_map):
 
     ssa.apply(pose)
 
-def save_task_info(output_path, score, run_time):
+def save_task_info(output_path, sequence, score, run_time):
     '''Save the task information into a json file.'''
     with open(os.path.join(output_path, 'task_info.json'), 'w') as f:
-        json.dump({'score':score,
+        json.dump({'sequence':sequence,
+                   'score':score,
                    'run_time':run_time}, f)
 
 def assemble_from_files(pdb_file1, pdb_file2, transformation_file, res1, res2, movable_jumps, connections, output_path):
@@ -120,7 +121,7 @@ def assemble_from_files(pdb_file1, pdb_file2, transformation_file, res1, res2, m
     
     # Save the task info
 
-    save_task_info(output_path, pose1.energies().total_energy(), run_time.total_seconds())
+    save_task_info(output_path, pose1.sequence(), pose1.energies().total_energy(), run_time.total_seconds())
 
 def run_tasks(task_list, num_jobs, job_id):
     '''Run tasks that belongs to the current job thread'''
@@ -139,8 +140,8 @@ def pilot_run(num_jobs, job_id):
     res1 = ('B', 10)
     res2 = ('A', 7)
     movable_jumps = [3]
-    connections = [((1, 'A', 7), (1, 'B', 8), 4),
-                   ((1, 'B', 14), (1,'C', 15), 4),
+    connections = [((1, 'A', 7), (1, 'B', 8), 2),
+                   ((1, 'B', 14), (1,'C', 15), 2),
                    ((2, 'A', 15), (1,'A', 1), 4)]
     output_path = 'data/test_assemble'
 
