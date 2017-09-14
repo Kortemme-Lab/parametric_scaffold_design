@@ -1,6 +1,8 @@
 #!/usr/bin/env python2.7
 import sys
 import os
+import json
+import datetime
 
 import pyrosetta
 import pyrosetta.rosetta as rosetta
@@ -70,6 +72,7 @@ def assemble(pose, movable_jumps, connections, seqpos_map):
     are converted to Rosetta indices by the seqpos_map.
     '''
     ssa = SecondaryStructureAssembler()
+    ssa.fast_design_rounds(5)
 
     for mj in movable_jumps:
         ssa.add_movable_jump(mj)
@@ -79,11 +82,21 @@ def assemble(pose, movable_jumps, connections, seqpos_map):
 
     ssa.apply(pose)
 
-def assemble_from_files(pdb_file1, pdb_file2, transformation_file, res1, res2, movable_jumps, connections):
+def save_task_info(output_path, score, run_time):
+    '''Save the task information into a json file.'''
+    with open(os.path.join(output_path, 'task_info.json'), 'w') as f:
+        json.dump({'score':score,
+                   'run_time':run_time}, f)
+
+def assemble_from_files(pdb_file1, pdb_file2, transformation_file, res1, res2, movable_jumps, connections, output_path):
     '''Assemble two secondary structures given the PDB files, transformation
     file, transformation residues, movable jumps and connections.
-    Return the assembled pose.
+    The outputs will be saved to the output_path.
     '''
+    start_time = datetime.datetime.now()
+   
+    # Load the structures
+
     pose1 = rosetta.core.pose.Pose()
     rosetta.core.import_pose.pose_from_file(pose1, pdb_file1)
     pose2 = rosetta.core.pose.Pose()
@@ -91,37 +104,73 @@ def assemble_from_files(pdb_file1, pdb_file2, transformation_file, res1, res2, m
 
     seqpos_map = make_seqpos_map(pose1, pose2)
 
+    # Do the pre-assembly
+
     T = PPSD.io.load_rigid_body_transformation_from_file(transformation_file)
     pre_assemble(pose1, pose2, res1, res2, T)
-    
+   
+    # Do the assembly
+
     assemble(pose1, movable_jumps, connections, seqpos_map)
 
-    return pose1
+    pose1.dump_pdb(os.path.join(output_path, 'assembled.pdb'))
 
-def sheet_helix_assembly(sheet_path, helix_path, out_path):
-    '''Assemble a sheet and a helix given their input pathes and 
-    the output path.
-    '''
-    pass
+    end_time = datetime.datetime.now()
+    run_time = end_time - start_time
+    
+    # Save the task info
 
+    save_task_info(output_path, pose1.energies().total_energy(), run_time.total_seconds())
+
+def run_tasks(task_list, num_jobs, job_id):
+    '''Run tasks that belongs to the current job thread'''
+    for i, t in enumerate(task_list):
+        if job_id == i % num_jobs:
+            if not os.path.exists(t['output_path']): 
+                os.makedirs(t['output_path'])
+
+            assemble_from_files(t['pdb_file1'], t['pdb_file2'], t['transformation_file'], t['res1'], t['res2'],
+                    t['movable_jumps'], t['connections'], t['output_path'])
+
+def pilot_run(num_jobs, job_id):
+    pdb_file1 = 'data/antiparallel_sheets/2_2_30_30/sheet.pdb'
+    pdb_file2 = 'data/straight_helices/15/helix.pdb'
+    transformation_file = 'database/transformations/sheet_helix_transformation.json'
+    res1 = ('B', 10)
+    res2 = ('A', 7)
+    movable_jumps = [3]
+    connections = [((1, 'A', 7), (1, 'B', 8), 4),
+                   ((1, 'B', 14), (1,'C', 15), 4),
+                   ((2, 'A', 15), (1,'A', 1), 4)]
+    output_path = 'data/test_assemble'
+
+    task_list = []
+
+    for i in range(1000):
+        task_list.append({'pdb_file1':pdb_file1,
+                      'pdb_file2':pdb_file2,
+                      'transformation_file':transformation_file,
+                      'res1':res1,
+                      'res2':res2,
+                      'movable_jumps':movable_jumps,
+                      'connections':connections,
+                      'output_path':os.path.join(output_path, str(i))})
+    
+    run_tasks(task_list, num_jobs, job_id)
 
 if __name__ == '__main__':
+
+    data_path = sys.argv[1]
+    
+    num_jobs = 1
+    job_id = 0
+    
+    if len(sys.argv) > 3:
+        num_jobs = int(sys.argv[2])
+        job_id = int(sys.argv[3]) - 1
 
     pyrosetta.init()
 
     #save_residue_transformation('data/test_assemble/after_fast_design.pdb', ('C', 34), ('A', 11), 'data/test_assemble/T_C34_A11.json')
    
-    pdb_file1 = 'data/antiparallel_sheets/4_0_50_10/sheet.pdb'
-    pdb_file2 = 'data/straight_helices/10/helix.pdb'
-    transformation_file = 'data/test_assemble/T_C34_A11.json'
-    res1 = ('B', 10)
-    res2 = ('A', 5)
-    movable_jumps = [3]
-    connections = [((1, 'A', 7), (1, 'B', 8), 4),
-                   ((1, 'B', 14), (1,'C', 15), 4),
-                   ((2, 'A', 10), (1,'A', 1), 4)]
-
-
-    pose = assemble_from_files(pdb_file1, pdb_file2, transformation_file, res1, res2, movable_jumps, connections)
-
-    pose.dump_pdb('data/test_assemble/after_assemble.pdb')
+    pilot_run(num_jobs, job_id)
