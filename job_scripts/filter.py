@@ -11,7 +11,6 @@ def ss_prediction_filter(pose, filter_dict):
     sspf = rosetta.protocols.rosetta_scripts.XmlObjects.static_get_filter('<SSPrediction name="sspred" use_svm="false" cmd="./dependencies/dependencies/psipred/runpsipred_single" use_probability="false" confidence="1" threshold="0.75"/>')
 
     filter_dict['SSPrediction']  = sspf.report_sm(pose)
-    
     return sspf.apply(pose)
 
 def pack_stat_filter(pose, filter_dict):
@@ -25,17 +24,27 @@ def pack_stat_filter(pose, filter_dict):
 
     return filter_dict['PackStat'] > 0.6
 
+def holes_filter(pose, filter_dict):
+    '''Filter by the holes filter.'''
+    rosetta.basic.options.set_file_option('holes:dalphaball', './dependencies/dependencies/DAlpahBall/DAlphaBall.gcc')
+
+    hf = rosetta.protocols.rosetta_scripts.XmlObjects.static_get_filter('<Holes name="holes" threshold="2.0" confidence="1"/>')
+
+    filter_dict['Holes'] = hf.report_sm(pose)
+    return hf.apply(pose)
+
 if __name__ == '__main__':
     pyrosetta.init()
 
-    pdb_file = 'data/test_assemble/0/assembled.pdb' 
-    #pdb_file = '/home/xingjie/DataBases/PPIAffinityDatabase/Affinity_Benchmark/1EMV_r_u.pdb' 
+    #pdb_file = 'data/test_assemble/0/assembled.pdb' 
+    pdb_file = '/home/xingjie/DataBases/PPIAffinityDatabase/Affinity_Benchmark/1EMV_r_u.pdb' 
     pose = rosetta.core.pose.Pose()
     rosetta.core.import_pose.pose_from_file(pose, pdb_file)
 
     filter_dict = {}
 
     #ss_prediction_filter(pose, filter_dict)
-    pack_stat_filter(pose, filter_dict)
+    #pack_stat_filter(pose, filter_dict)
+    holes_filter(pose, filter_dict)
 
     print filter_dict
