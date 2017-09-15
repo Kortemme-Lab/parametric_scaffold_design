@@ -7,14 +7,23 @@ import parametric_protein_scaffold_design as PPSD
 
 def ss_prediction_filter(pose, filter_dict):
     '''Filter by the secondary structure prediction.'''
-    # Initialize the filter
-
+    
     sspf = rosetta.protocols.rosetta_scripts.XmlObjects.static_get_filter('<SSPrediction name="sspred" use_svm="false" cmd="./dependencies/dependencies/psipred/runpsipred_single" use_probability="false" confidence="1" threshold="0.75"/>')
 
     filter_dict['SSPrediction']  = sspf.report_sm(pose)
     
     return sspf.apply(pose)
 
+def pack_stat_filter(pose, filter_dict):
+    '''Filter by the packing statistics filter.'''
+
+    psf = rosetta.protocols.rosetta_scripts.XmlObjects.static_get_filter('<PackStat name="pack" threshold="0.6" confidence="1"/>')
+    
+    filter_dict['PackStat'] = psf.report_sm(pose)
+
+    # Because the result of the PackStatFilter is stochastic, do not call the apply() function again
+
+    return filter_dict['PackStat'] > 0.6
 
 if __name__ == '__main__':
     pyrosetta.init()
@@ -24,4 +33,9 @@ if __name__ == '__main__':
     pose = rosetta.core.pose.Pose()
     rosetta.core.import_pose.pose_from_file(pose, pdb_file)
 
-    ss_prediction_filter(pose, {})
+    filter_dict = {}
+
+    #ss_prediction_filter(pose, filter_dict)
+    pack_stat_filter(pose, filter_dict)
+
+    print filter_dict
