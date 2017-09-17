@@ -49,6 +49,12 @@ def helix_shape_complementarity_filter(pose, filter_dict):
 
     print "Not working yet!"
 
+def buried_unsatisfied_hbond_filter(pose, filter_dict):
+    '''Filter by the number of buried unsatisfied hydrogen bonds.'''
+    buhf = rosetta.protocols.rosetta_scripts.XmlObjects.static_get_filter('<BuriedUnsatHbonds name="buriedunsat" jump_number="0" cutoff="20" />')
+
+    filter_dict['BuriedUnsatHbonds'] = buhf.report_sm(pose)
+    return buhf.apply(pose)
 
 if __name__ == '__main__':
     pyrosetta.init()
@@ -64,5 +70,6 @@ if __name__ == '__main__':
     #pack_stat_filter(pose, filter_dict)
     #holes_filter(pose, filter_dict)
     #helix_shape_complementarity_filter(pose, filter_dict)
+    buried_unsatisfied_hbond_filter(pose, filter_dict)
 
     print filter_dict
