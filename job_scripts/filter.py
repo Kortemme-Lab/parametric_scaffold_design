@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.7
 import os
+import sys
 import json
 
 import pyrosetta
@@ -68,6 +69,9 @@ def filter_one_design(design_path):
        inside the filter_info.json file.
     '''
     # Load the design
+    
+    if not os.path.exists(os.path.join(design_path, 'assembled.pdb')):
+        return
 
     pose = rosetta.core.pose.Pose()
     rosetta.core.import_pose.pose_from_file(pose, os.path.join(design_path, 'assembled.pdb'))
@@ -86,6 +90,15 @@ def filter_one_design(design_path):
 
     with open(os.path.join(design_path, 'filter_info.json'), 'w') as f:
         json.dump(filter_dict, f)
+
+def filter_designs(designs_path, num_jobs, job_id):
+    '''Filter all designs in the designs_path'''
+    design_pathes = [os.path.join(designs_path, p) for p in os.listdir(designs_path)]
+
+    for i, design_path in enumerate(design_pathes):
+        if i % num_jobs == job_id:
+            filter_one_design(design_path)
+
 
 def select_designs(input_path, output_path, max_pass):
     '''Select the designs in the input path and link the designs that pass the filter to the output_path.
@@ -112,10 +125,20 @@ def select_designs(input_path, output_path, max_pass):
                         'filter_info':filter_info})
    
     designs = sorted(designs, key=lambda x : x['task_info']['score'])
-
+   
     #TODO
 
 if __name__ == '__main__':
+    
+    data_path = sys.argv[1]
+    
+    num_jobs = 1
+    job_id = 0
+    
+    if len(sys.argv) > 3:
+        num_jobs = int(sys.argv[2])
+        job_id = int(sys.argv[3]) - 1
+
     pyrosetta.init()
 
     #pdb_file = 'data/test_assemble/0/assembled.pdb' 
@@ -133,6 +156,8 @@ if __name__ == '__main__':
 
     #print filter_dict
 
-    #filter_designs('data/test_assemble', 'data/test_filter', 1)
+    #select_designs('data/test_assemble', 'data/test_filter', 1)
 
-    filter_one_design('data/test_assemble/0')
+    #filter_one_design('data/test_assemble/0')
+
+    filter_designs(data_path, num_jobs, job_id)
