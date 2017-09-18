@@ -100,8 +100,8 @@ def filter_designs(designs_path, num_jobs, job_id):
             filter_one_design(design_path)
 
 
-def select_designs(input_path, output_path, max_pass):
-    '''Select the designs in the input path and link the designs that pass the filter to the output_path.
+def select_designs(input_path, max_pass):
+    '''Select the designs in the input path that pass all the filters.
     If the number of passed designs are more than the max_pass, only save the top max_pass designs.
     '''
     # Load the designs
@@ -126,7 +126,20 @@ def select_designs(input_path, output_path, max_pass):
    
     designs = sorted(designs, key=lambda x : x['task_info']['score'])
    
-    #TODO
+    # Get designs that pass all the filters  
+
+    passed_designs = []
+
+    for d in designs:
+        passed = True
+        for k in d['filter_info'].keys():
+            passed = passed and d['filter_info'][k]['pass']
+
+        if passed:
+            passed_designs.append(d)
+
+    return passed_designs[:max_pass]
+
 
 if __name__ == '__main__':
     
@@ -156,8 +169,9 @@ if __name__ == '__main__':
 
     #print filter_dict
 
-    #select_designs('data/test_assemble', 'data/test_filter', 1)
-
     #filter_one_design('data/test_assemble/0')
 
-    filter_designs(data_path, num_jobs, job_id)
+    #filter_designs(data_path, num_jobs, job_id)
+    
+    print select_designs(data_path, 1)
+
