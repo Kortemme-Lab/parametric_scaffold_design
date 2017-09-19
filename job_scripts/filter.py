@@ -169,9 +169,7 @@ if __name__ == '__main__':
 
     #print filter_dict
 
-    #filter_one_design('data/test_assemble/0')
 
-    #filter_designs(data_path, num_jobs, job_id)
+    filter_designs(data_path, num_jobs, job_id)
     
-    print select_designs(data_path, 1)
 
