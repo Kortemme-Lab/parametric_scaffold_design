@@ -115,6 +115,7 @@ def assemble_from_files(pdb_file1, pdb_file2, transformation_file, res1, res2, m
     assemble(pose1, movable_jumps, connections, seqpos_map)
 
     pose1.dump_pdb(os.path.join(output_path, 'assembled.pdb'))
+    PPSD.io.sequence_to_fasta_file(os.path.join(output_path, 'assembled.fasta'), 'assembled', pose1.sequence())
 
     end_time = datetime.datetime.now()
     run_time = end_time - start_time
