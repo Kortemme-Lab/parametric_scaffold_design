@@ -42,19 +42,10 @@ def holes_filter(pose, filter_dict):
 
 def helix_shape_complementarity_filter(pose, filter_dict):
     '''Filter by helix shape complementarity.'''
-    #hscf = rosetta.protocols.rosetta_scripts.XmlObjects.static_get_filter('<SSShapeComplementarity name="sc_hx" />')
-    #hscf = rosetta.protocols.rosetta_scripts.XmlObjects.static_get_filter('<SSShapeComplementarity name="sc_hx" helices="true" loops="false" confidence="1" verbose="1" threshold="0.6" />')
+    hscf = rosetta.protocols.rosetta_scripts.XmlObjects.static_get_filter('<SSShapeComplementarity name="sc_hx" helices="true" loops="false" confidence="1" verbose="1" min_sc="0.6" />')
 
-    #filter_dict['SSShapeComplementarity'] = hscf.report_sm(pose)
-    #return hscf.apply(pose)
-
-    #ff = rosetta.protocols.filters.FilterFactory.get_instance()
-    #fmap = ff.filter_creator_map()
-    #
-    #for f in fmap:
-    #    print f
-
-    print "Not working yet!"
+    filter_dict['SSShapeComplementarity'] = hscf.report_sm(pose)
+    return hscf.apply(pose)
 
 def buried_unsatisfied_hbond_filter(pose, filter_dict):
     '''Filter by the number of buried unsatisfied hydrogen bonds.'''
@@ -100,7 +91,8 @@ def filter_one_design(design_path):
     filter_dict = {}
 
     filter_list = [ss_prediction_filter, pack_stat_filter, 
-            holes_filter, buried_unsatisfied_hbond_filter]
+            holes_filter, helix_shape_complementarity_filter,
+            buried_unsatisfied_hbond_filter]
 
     for f in filter_list:
         f(pose, filter_dict)
@@ -181,6 +173,8 @@ if __name__ == '__main__':
 
     pyrosetta.init()
 
+    ###DEBUG
+
     #pdb_file = 'data/test_assemble/0/assembled.pdb' 
     #pdb_file = '/home/xingjie/DataBases/PPIAffinityDatabase/Affinity_Benchmark/1EMV_r_u.pdb' 
     #pose = rosetta.core.pose.Pose()
@@ -188,14 +182,15 @@ if __name__ == '__main__':
 
     #filter_dict = {}
 
-    #ss_prediction_filter(pose, filter_dict)
-    #pack_stat_filter(pose, filter_dict)
-    #holes_filter(pose, filter_dict)
-    #helix_shape_complementarity_filter(pose, filter_dict)
-    #buried_unsatisfied_hbond_filter(pose, filter_dict)
+    ##ss_prediction_filter(pose, filter_dict)
+    ##pack_stat_filter(pose, filter_dict)
+    ##holes_filter(pose, filter_dict)
+    ##helix_shape_complementarity_filter(pose, filter_dict)
+    ##buried_unsatisfied_hbond_filter(pose, filter_dict)
 
     #print filter_dict
 
+    ####DEBUG
 
     filter_designs(data_path, num_jobs, job_id)
     
