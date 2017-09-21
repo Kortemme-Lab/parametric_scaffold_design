@@ -82,24 +82,24 @@ def save_info_of_natrual_sheets_from_cath(data_path, sheets_path, num_jobs, job_
         for p in os.listdir(os.path.join(sheets_path, sf)):
             save_one_natural_sheet_info(data_path, os.path.join(sheets_path, sf, p))
 
-def plot_natural_sheet_info(data_path):
+def plot_natural_sheet_info(data_path, savefig=False):
     '''Plot the statistics of natural beta sheets.'''
     
     with open(os.path.join(data_path, 'deviations_degree.txt'), 'r') as f:
         PPSD.plot.plot_histogram([float(x) for x in f.read().split()], 'N-CA-C angle deviations (degree)',
-                x_min=-15, x_max=15)
+                x_min=-15, x_max=15, savefig_path=data_path if savefig else None)
 
     with open(os.path.join(data_path, 'rama_scores.txt'), 'r') as f:
         PPSD.plot.plot_histogram([float(x) for x in f.read().split()], 'Ramachandran scores',
-                x_min=0, x_max=15)
+                x_min=0, x_max=15, savefig_path=data_path if savefig else None)
 
     with open(os.path.join(data_path, 'nearest_neighbor_distances.txt'), 'r') as f:
         PPSD.plot.plot_histogram([float(x) for x in f.read().split()], 'Distance to nearst neighbor',
-                x_min=0, x_max=10)
+                x_min=0, x_max=10, savefig_path=data_path if savefig else None)
 
     with open(os.path.join(data_path, 'all_hb_scores.txt'), 'r') as f:
         PPSD.plot.plot_histogram([float(x) for x in f.read().split()], 'H-Bond scores', 
-                x_min=-2, x_max=0)
+                x_min=-2, x_max=0, savefig_path=data_path if savefig else None)
 
 
 if __name__ == '__main__':
@@ -117,4 +117,4 @@ if __name__ == '__main__':
     #pyrosetta.init()
     #save_info_of_natrual_sheets_from_cath(data_path, input_path, num_jobs, job_id)
 
-    plot_natural_sheet_info(data_path)
+    plot_natural_sheet_info(data_path, True)

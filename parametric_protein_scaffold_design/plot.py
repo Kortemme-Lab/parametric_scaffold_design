@@ -1,10 +1,12 @@
+import os
+
 import numpy as np
 import matplotlib
 matplotlib.use('TkAgg') 
 import matplotlib.pyplot as plt
 
 
-def plot_histogram(data, xlabel, x_min=None, x_max=None):
+def plot_histogram(data, xlabel, x_min=None, x_max=None, savefig_path=None, savefig_type='png'):
     '''Plot a histogram.'''
     if x_min is None:
         x_min = min(data)
@@ -20,4 +22,7 @@ def plot_histogram(data, xlabel, x_min=None, x_max=None):
     plt.ylabel('Number of data')
     plt.xlabel(xlabel)
 
-    plt.show()
+    if savefig_path:
+        plt.savefig(os.path.join(savefig_path, '_'.join(xlabel.split()) + '.' + savefig_type))
+    else:
+        plt.show()
