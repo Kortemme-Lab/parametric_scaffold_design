@@ -64,6 +64,25 @@ def buried_unsatisfied_hbond_filter(pose, filter_dict):
                                         'pass' : buhf.apply(pose)}
     return filter_dict['BuriedUnsatHbonds']['pass']
 
+def fragment_analysis(design_path):
+    '''Do fragment analysis on a design.
+    Return the best CRMSD at the worst position.
+    '''
+    fqa = PPSD.fragment_quality_analysis.FragmentQualityAnalyzer(
+            './dependencies/dependencies/psipred/runpsipred_single', 
+            'fragment_picker.linuxclangrelease', 
+            'database/fragment_quality_analysis/small.vall.gz', 
+            'database/fragment_quality_analysis/simple.wghts')
+
+    fdf = fqa.pick_fragments(
+            os.path.join(design_path, 'assembled.pdb'), 
+            os.path.join(design_path, 'assembled.fasta'), 
+            design_path)
+
+    crmsds = fqa.get_position_crmsd(fdf)
+
+    return max(crmsds)
+
 def filter_one_design(design_path):
     '''Filter one design inside the design path. And save the filter information
        inside the filter_info.json file.
@@ -85,6 +104,14 @@ def filter_one_design(design_path):
 
     for f in filter_list:
         f(pose, filter_dict)
+
+    # Do fragment analysis
+
+    worst_crmsd = fragment_analysis(design_path) 
+    threshold = 1
+
+    filter_dict['fragment_analysis'] = {'worst_crmsd' : worst_crmsd,
+                                        'pass' : worst_crmsd < threshold} 
 
     # Dump the results
 
