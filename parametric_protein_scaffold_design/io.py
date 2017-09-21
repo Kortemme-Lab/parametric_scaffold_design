@@ -77,4 +77,17 @@ def load_rigid_body_transformation_from_file(fin):
 
     return T
 
+def sequence_to_fasta_file(fasta_path, title, sequence):
+    '''Save a sequence into a fasta file.'''
+    with open(fasta_path, 'w') as f:
+        f.write('>' + title + '\n')
+        
+        start = 0
+        end = min(80, len(sequence))
+        f.write(sequence[start:end] + '\n')
+
+        while end < len(sequence):
+            start += 80
+            end = min(start + 80, len(sequence))
+            f.write(sequence[start:end] + '\n')
 
