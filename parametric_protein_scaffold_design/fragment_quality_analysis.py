@@ -68,10 +68,11 @@ class FragmentQualityAnalyzer:
 
 if __name__ == '__main__':
 
-    fqa = FragmentQualityAnalyzer('./dependencies/dependencies/psipred/runpsipred_single', 'fragment_picker.linuxclangrelease', 'database/fragment_quality_analysis/small.vall.gz', 'database/fragment_quality_analysis/simple.wghts')
+    #fqa = FragmentQualityAnalyzer('./dependencies/dependencies/psipred/runpsipred_single', 'fragment_picker.linuxclangrelease', 'database/fragment_quality_analysis/small.vall.gz', 'database/fragment_quality_analysis/simple.wghts')
 
     #fdf = fqa.pick_fragments('data/fragment_quality_analysis/assembled.pdb', 'data/fragment_quality_analysis/asseA.fasta', 'data/fragment_quality_analysis')
 
-    fdf = 'data/fragment_quality_analysis/frags.fsc.200.9mers'
-    print fqa.get_position_crmsd(fdf)
+    #fdf = 'data/fragment_quality_analysis/frags.fsc.200.9mers'
+    #print fqa.get_position_crmsd(fdf)
 
+    pass
