@@ -151,6 +151,7 @@ def select_designs(input_path, max_pass):
     # Load the designs
 
     designs = load_designs(input_path)
+    print 'Number of designs = ', len(designs) 
 
     # Get designs that pass all the filters  
 
@@ -159,10 +160,14 @@ def select_designs(input_path, max_pass):
     for d in designs:
         passed = True
         for k in d['filter_info'].keys():
+            #if k == 'fragment_analysis': continue ###DEBUG
+
             passed = passed and d['filter_info'][k]['pass']
 
         if passed:
             passed_designs.append(d)
+
+    print 'Number of designs that pass filters = ', len(passed_designs)
 
     return passed_designs[:max_pass]
 
@@ -226,5 +231,6 @@ if __name__ == '__main__':
 
     #filter_designs(data_path, num_jobs, job_id)
     
-    plot_filter_scores(data_path)
+    #plot_filter_scores(data_path)
 
+    print [(d['id'], d['task_info']['score']) for d in select_designs(data_path, 1000)]
