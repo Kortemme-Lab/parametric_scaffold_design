@@ -6,7 +6,7 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 
-def plot_histogram(data, xlabel, x_min=None, x_max=None, savefig_path=None, savefig_type='png'):
+def plot_histogram(data, xlabel, x_min=None, x_max=None, savefig_path=None, savefig_type='png', show_plot=True):
     '''Plot a histogram.'''
     if x_min is None:
         x_min = min(data)
@@ -24,5 +24,17 @@ def plot_histogram(data, xlabel, x_min=None, x_max=None, savefig_path=None, save
 
     if savefig_path:
         plt.savefig(os.path.join(savefig_path, '_'.join(xlabel.split()) + '.' + savefig_type))
-    else:
+    elif show_plot:
+        plt.show()
+
+    return plt
+
+def plot_rectangular_box(left, right, bottom, top, color='r', linewidth=3.0, savefig_path=None, show_plot=True):
+    '''Plot a rectangular box'''
+
+    plt.plot([left, left, right, right, left], [bottom, top, top, bottom, bottom], color=color, linewidth=linewidth)
+
+    if savefig_path:
+        plt.savefig(savefig_path)
+    elif show_plot:
         plt.show()

@@ -169,21 +169,27 @@ def select_designs(input_path, max_pass):
 def plot_one_filter_score(design_list, filter_name, score_name):
     '''Plot the distribution of a filter score.'''
     data = [d['filter_info'][filter_name][score_name] for d in design_list]
-    PPSD.plot.plot_histogram(data, '_'.join([filter_name, score_name])) 
+    return PPSD.plot.plot_histogram(data, '_'.join([filter_name, score_name]), show_plot=False) 
 
 def plot_filter_scores(input_path):
     '''Plot distributions of all scores.'''
+    figure_path = os.path.join(input_path, 'figures')
+    if not os.path.exists(figure_path):
+        os.mkdir(figure_path)
+    
     design_list = load_designs(input_path)
 
-    keys = [('SSPrediction', 'score'),
-            ('PackStat', 'score'),
-            ('Holes', 'score'),
-            ('SSShapeComplementarity', 'score'),
-            ('BuriedUnsatHbonds', 'score'),
-            ('fragment_analysis', 'worst_crmsd')]
+    keys = [('SSPrediction', 'score', 0.75, 1),
+            ('PackStat', 'score', 0.6, 1),
+            ('Holes', 'score', 2, 0),
+            ('SSShapeComplementarity', 'score', 0.6, 1),
+            ('BuriedUnsatHbonds', 'score', 20, 0),
+            ('fragment_analysis', 'worst_crmsd', 1, 0)]
    
     for key in keys:
-        plot_one_filter_score(design_list, key[0], key[1])
+        plt = plot_one_filter_score(design_list, key[0], key[1])
+        PPSD.plot.plot_rectangular_box(key[2], plt.xlim()[key[3]], plt.ylim()[0], plt.ylim()[1],
+                savefig_path=os.path.join(figure_path, key[0] + '_distribution.png'))
 
 
 if __name__ == '__main__':
@@ -218,7 +224,7 @@ if __name__ == '__main__':
 
     ####DEBUG
 
-    filter_designs(data_path, num_jobs, job_id)
+    #filter_designs(data_path, num_jobs, job_id)
     
-    #plot_filter_scores(data_path)
+    plot_filter_scores(data_path)
 
