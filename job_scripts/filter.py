@@ -44,8 +44,9 @@ def helix_shape_complementarity_filter(pose, filter_dict):
     '''Filter by helix shape complementarity.'''
     hscf = rosetta.protocols.rosetta_scripts.XmlObjects.static_get_filter('<SSShapeComplementarity name="sc_hx" helices="true" loops="false" confidence="1" verbose="1" min_sc="0.6" />')
 
-    filter_dict['SSShapeComplementarity'] = hscf.report_sm(pose)
-    return hscf.apply(pose)
+    filter_dict['SSShapeComplementarity'] = {'score' : hscf.report_sm(pose),
+                                             'pass' : hscf.apply(pose)}
+    return filter_dict['SSShapeComplementarity']['pass']
 
 def buried_unsatisfied_hbond_filter(pose, filter_dict):
     '''Filter by the number of buried unsatisfied hydrogen bonds.'''
@@ -121,13 +122,8 @@ def filter_designs(designs_path, num_jobs, job_id):
         if i % num_jobs == job_id:
             filter_one_design(design_path)
 
-
-def select_designs(input_path, max_pass):
-    '''Select the designs in the input path that pass all the filters.
-    If the number of passed designs are more than the max_pass, only save the top max_pass designs.
-    '''
-    # Load the designs
-
+def load_designs(input_path):
+    '''Load information of designs into a list.'''
     designs = []
 
     for d in os.listdir(input_path):
@@ -146,8 +142,16 @@ def select_designs(input_path, max_pass):
                         'task_info':task_info,
                         'filter_info':filter_info})
    
-    designs = sorted(designs, key=lambda x : x['task_info']['score'])
-   
+    return sorted(designs, key=lambda x : x['task_info']['score'])
+
+def select_designs(input_path, max_pass):
+    '''Select the designs in the input path that pass all the filters.
+    If the number of passed designs are more than the max_pass, only save the top max_pass designs.
+    '''
+    # Load the designs
+
+    designs = load_designs(input_path)
+
     # Get designs that pass all the filters  
 
     passed_designs = []
@@ -161,6 +165,25 @@ def select_designs(input_path, max_pass):
             passed_designs.append(d)
 
     return passed_designs[:max_pass]
+
+def plot_one_filter_score(design_list, filter_name, score_name):
+    '''Plot the distribution of a filter score.'''
+    data = [d['filter_info'][filter_name][score_name] for d in design_list]
+    PPSD.plot.plot_histogram(data, '_'.join([filter_name, score_name])) 
+
+def plot_filter_scores(input_path):
+    '''Plot distributions of all scores.'''
+    design_list = load_designs(input_path)
+
+    keys = [('SSPrediction', 'score'),
+            ('PackStat', 'score'),
+            ('Holes', 'score'),
+            ('SSShapeComplementarity', 'score'),
+            ('BuriedUnsatHbonds', 'score'),
+            ('fragment_analysis', 'worst_crmsd')]
+   
+    for key in keys:
+        plot_one_filter_score(design_list, key[0], key[1])
 
 
 if __name__ == '__main__':
@@ -197,4 +220,5 @@ if __name__ == '__main__':
 
     filter_designs(data_path, num_jobs, job_id)
     
+    #plot_filter_scores(data_path)
 
