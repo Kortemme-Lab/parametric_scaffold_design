@@ -4,11 +4,12 @@ import subprocess
 
 class FragmentQualityAnalyzer:
     '''Analyze fragment quality of a strcuture.'''
-    def __init__(self, runpsipred_single_path, fragment_picker_cmd, vall_path, weights_file):
+    def __init__(self, runpsipred_single_path, fragment_picker_cmd, vall_path, weights_file, rosetta_database=None):
         self.runpsipred_single_path_abs = os.path.abspath(runpsipred_single_path)
         self.fragment_picker_cmd = fragment_picker_cmd
         self.vall_path_abs = os.path.abspath(vall_path)
         self.weights_file_abs = os.path.abspath(weights_file)
+        self.rosetta_database = rosetta_database
     
     def pick_fragments(self, input_pdb, input_fasta, working_dir):
         '''Pick fragments of a structure.
@@ -27,8 +28,12 @@ class FragmentQualityAnalyzer:
     
         # Do fragment picking
    
-        pick_cmd = [self.fragment_picker_cmd,
-                    '-in::file::vall', self.vall_path_abs,
+        pick_cmd = [self.fragment_picker_cmd]
+        
+        if self.rosetta_database:
+          pick_cmd += ['-in:path:database', self.rosetta_database]
+        
+        pick_cmd += ['-in::file::vall', self.vall_path_abs,
                     '-in::file::fasta', input_fasta_abs,
                     '-in::file::s', input_pdb_abs,
                     '-frags::ss_pred', ss2_file, 'predA',

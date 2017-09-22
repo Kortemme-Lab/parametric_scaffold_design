@@ -61,9 +61,12 @@ def fragment_analysis(design_path):
     '''
     fqa = PPSD.fragment_quality_analysis.FragmentQualityAnalyzer(
             './dependencies/dependencies/psipred/runpsipred_single', 
-            'fragment_picker.linuxclangrelease', 
-            'database/fragment_quality_analysis/small.vall.gz', 
-            'database/fragment_quality_analysis/simple.wghts')
+            #'fragment_picker.linuxclangrelease', 
+            '/netapp/home/rpac/Rosetta_57781/main/source/bin/fragment_picker.default.linuxgccrelease',
+            #'database/fragment_quality_analysis/small.vall.gz', 
+            '/netapp/home/klabqb3backrub/tools/fragment_generation/vall.jul19.2011',
+            'database/fragment_quality_analysis/simple.wghts',
+            rosetta_database='/netapp/home/rpac/Rosetta_57781/main/database')
 
     fdf = fqa.pick_fragments(
             os.path.join(design_path, 'assembled.pdb'), 
