@@ -134,7 +134,7 @@ def run_tasks(task_list, num_jobs, job_id):
             assemble_from_files(t['pdb_file1'], t['pdb_file2'], t['transformation_file'], t['res1'], t['res2'],
                     t['movable_jumps'], t['connections'], t['output_path'])
 
-def pilot_run(num_jobs, job_id):
+def pilot_run(data_path, num_jobs, job_id):
     pdb_file1 = 'data/antiparallel_sheets/2_2_30_30/sheet.pdb'
     pdb_file2 = 'data/straight_helices/15/helix.pdb'
     transformation_file = 'database/transformations/sheet_helix_transformation.json'
@@ -144,7 +144,7 @@ def pilot_run(num_jobs, job_id):
     connections = [((1, 'A', 7), (1, 'B', 8), 2),
                    ((1, 'B', 14), (1,'C', 15), 2),
                    ((2, 'A', 15), (1,'A', 1), 4)]
-    output_path = 'data/test_assemble'
+    output_path = data_path
 
     task_list = []
 
@@ -175,4 +175,4 @@ if __name__ == '__main__':
 
     #save_residue_transformation('data/test_assemble/after_fast_design.pdb', ('C', 34), ('A', 11), 'data/test_assemble/T_C34_A11.json')
    
-    pilot_run(num_jobs, job_id)
+    pilot_run(data_path, num_jobs, job_id)
