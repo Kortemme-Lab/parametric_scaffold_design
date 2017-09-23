@@ -53,7 +53,8 @@ class FragmentQualityAnalyzer:
 
         return os.path.join(working_dir, 'frags.fsc.200.9mers')
 
-    def get_position_crmsd(self, fragment_discribing_file):
+    @staticmethod
+    def get_position_crmsd(fragment_discribing_file):
         '''Return a list of best fragment crmsd at each position.'''
         best_crmsds = []
         
@@ -78,6 +79,6 @@ if __name__ == '__main__':
     #fdf = fqa.pick_fragments('data/fragment_quality_analysis/assembled.pdb', 'data/fragment_quality_analysis/asseA.fasta', 'data/fragment_quality_analysis')
 
     #fdf = 'data/fragment_quality_analysis/frags.fsc.200.9mers'
-    #print fqa.get_position_crmsd(fdf)
+    #print FragmentQualityAnalyzer.get_position_crmsd(fdf)
 
     pass

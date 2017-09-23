@@ -74,7 +74,7 @@ def fragment_analysis(design_path):
             os.path.join(design_path, 'assembled.fasta'), 
             design_path)
 
-    crmsds = fqa.get_position_crmsd(fdf)
+    crmsds = PPSD.fragment_quality_analysis.FragmentQualityAnalyzer.get_position_crmsd(fdf)
 
     return max(crmsds)
 
@@ -196,6 +196,41 @@ def plot_filter_scores(input_path):
         PPSD.plot.plot_rectangular_box(key[2], plt.xlim()[key[3]], plt.ylim()[0], plt.ylim()[1],
                 savefig_path=os.path.join(figure_path, key[0] + '_distribution.png'))
 
+def plot_fragment_quality_each_position(input_path, savefig=False):
+    '''Plot the fragment quality at each position.'''
+    crmsds_list = []
+
+    for d in os.listdir(input_path):
+        fragment_discribing_file = os.path.join(input_path, d, 'frags.fsc.200.9mers')
+        
+        if os.path.exists(fragment_discribing_file):
+            crmsds_list.append(
+                    PPSD.fragment_quality_analysis.FragmentQualityAnalyzer.get_position_crmsd(
+                    fragment_discribing_file))
+    
+    X = []
+    Y = []
+    for crmsds in crmsds_list:
+        X += list(range(1, len(crmsds) + 1))
+        Y += crmsds
+
+    import matplotlib.pyplot as plt
+
+    plt.scatter(X, Y)
+    plt.ylim(0, plt.ylim()[1])
+    plt.axhline(1, color='r')
+    
+    plt.xlabel('Sequence position')
+    plt.ylabel('CRMSD')
+   
+    if savefig:
+        if not os.path.exists(os.path.join(data_path, 'figures')):
+            os.mkdir(os.path.join(data_path, 'figures'))
+        
+        plt.savefig(os.path.join(data_path, 'figures', 'fragment_quality_each_position.png'))
+    else:
+        plt.show()
+
 
 if __name__ == '__main__':
     
@@ -233,4 +268,6 @@ if __name__ == '__main__':
     
     #plot_filter_scores(data_path)
 
-    print [(d['id'], d['task_info']['score']) for d in select_designs(data_path, 1000)]
+    #print [(d['id'], d['task_info']['score']) for d in select_designs(data_path, 1000)]
+
+    plot_fragment_quality_each_position(data_path, savefig=True)
