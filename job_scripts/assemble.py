@@ -142,7 +142,7 @@ def pilot_run(data_path, num_jobs, job_id):
     res2 = ('A', 7)
     movable_jumps = [3]
     connections = [((1, 'A', 7), (1, 'B', 8), 2),
-                   ((1, 'B', 14), (1,'C', 15), 2),
+                   ((1, 'B', 14), (1,'C', 15), 4),
                    ((2, 'A', 15), (1,'A', 1), 4)]
     output_path = data_path
 
