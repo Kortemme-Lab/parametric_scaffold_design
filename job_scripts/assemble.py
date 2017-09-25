@@ -73,6 +73,7 @@ def assemble(pose, movable_jumps, connections, seqpos_map):
     '''
     ssa = SecondaryStructureAssembler()
     ssa.fast_design_rounds(5)
+    ssa.design_loops_temp_ramping_cycles(50)
 
     for mj in movable_jumps:
         ssa.add_movable_jump(mj)
