@@ -176,7 +176,7 @@ def plot_one_filter_score(design_list, filter_name, score_name):
     data = [d['filter_info'][filter_name][score_name] for d in design_list]
     return PPSD.plot.plot_histogram(data, '_'.join([filter_name, score_name]), show_plot=False) 
 
-def plot_filter_scores(input_path):
+def plot_filter_scores(input_path, save_figures=False):
     '''Plot distributions of all scores.'''
     figure_path = os.path.join(input_path, 'figures')
     if not os.path.exists(figure_path):
@@ -194,7 +194,7 @@ def plot_filter_scores(input_path):
     for key in keys:
         plt = plot_one_filter_score(design_list, key[0], key[1])
         PPSD.plot.plot_rectangular_box(key[2], plt.xlim()[key[3]], plt.ylim()[0], plt.ylim()[1],
-                savefig_path=os.path.join(figure_path, key[0] + '_distribution.png'))
+                savefig_path=os.path.join(figure_path, key[0] + '_distribution.png') if save_figures else None)
 
 def plot_fragment_quality_each_position(input_path, savefig=False):
     '''Plot the fragment quality at each position.'''
@@ -266,8 +266,8 @@ if __name__ == '__main__':
 
     #filter_designs(data_path, num_jobs, job_id)
     
-    #plot_filter_scores(data_path)
+    plot_filter_scores(data_path)
 
     #print [(d['id'], d['task_info']['score']) for d in select_designs(data_path, 1000)]
 
-    plot_fragment_quality_each_position(data_path, savefig=True)
+    #plot_fragment_quality_each_position(data_path, savefig=True)
