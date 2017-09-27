@@ -136,7 +136,7 @@ def run_tasks(task_list, num_jobs, job_id):
                     t['movable_jumps'], t['connections'], t['output_path'])
 
 def pilot_run(data_path, num_jobs, job_id):
-    pdb_file1 = 'data/antiparallel_sheets_3_8/2_2_30_30/sheet.pdb'
+    pdb_file1 = 'data/antiparallel_sheets_3_8/2_4_30_50/sheet.pdb'
     pdb_file2 = 'data/straight_helices/15/helix.pdb'
     transformation_file = 'database/transformations/sheet_helix_transformation.json'
     res1 = ('B', 13)
