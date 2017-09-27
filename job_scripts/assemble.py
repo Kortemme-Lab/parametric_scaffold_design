@@ -136,13 +136,14 @@ def run_tasks(task_list, num_jobs, job_id):
                     t['movable_jumps'], t['connections'], t['output_path'])
 
 def pilot_run(data_path, num_jobs, job_id):
-    pdb_file1 = 'data/antiparallel_sheets_2_8/2_4_30_50/sheet.pdb'
+    pdb_file1 = 'data/antiparallel_sheets_2_8/2_2_30_30/sheet.pdb'
     pdb_file2 = 'data/straight_helices/15/helix.pdb'
     transformation_file = 'database/transformations/sheet_helix_transformation.json'
     #res1 = ('B', 13) # For 3*8
-    res1 = ('B', 12) # For 2*8
+    res1 = ('B', 14) # For 2*8
     res2 = ('A', 7)
-    movable_jumps = [3]
+    #movable_jumps = [3] #For 3*8
+    movable_jumps = [2] #For 2*8
     #connections = [((1, 'B', 16), (1, 'A', 1), 2), #For 3 * 8
     #               ((1, 'C', 24), (1,'B', 9), 2),
     #               ((2, 'A', 15), (1,'C', 17), 4)]
