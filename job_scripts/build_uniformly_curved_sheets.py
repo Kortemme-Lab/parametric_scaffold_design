@@ -243,7 +243,7 @@ if __name__ == '__main__':
     strand_directions = rosetta.utility.vector1_bool()
     strand_directions.append(False)
     strand_directions.append(True)
-    strand_directions.append(False)
+    #strand_directions.append(False)
 
     make_sheets(data_path, strand_directions, 8, [10, 20, 30, 40, 50], [10, 20, 30, 40, 50])
 
