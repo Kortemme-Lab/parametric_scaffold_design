@@ -3,6 +3,8 @@ import os
 import sys
 import json
 
+import numpy as np
+
 import pyrosetta
 import pyrosetta.rosetta as rosetta
 import parametric_protein_scaffold_design as PPSD
@@ -58,7 +60,7 @@ def buried_unsatisfied_hbond_filter(pose, filter_dict):
 
 def fragment_analysis(design_path):
     '''Do fragment analysis on a design.
-    Return the best CRMSD at the worst position.
+    Return the CRMSDs at each position.
     '''
     fqa = PPSD.fragment_quality_analysis.FragmentQualityAnalyzer(
             './dependencies/dependencies/psipred/runpsipred_single', 
@@ -76,7 +78,7 @@ def fragment_analysis(design_path):
 
     crmsds = PPSD.fragment_quality_analysis.FragmentQualityAnalyzer.get_position_crmsd(fdf)
 
-    return max(crmsds)
+    return crmsds
 
 def filter_one_design(design_path):
     '''Filter one design inside the design path. And save the filter information
@@ -103,11 +105,16 @@ def filter_one_design(design_path):
 
     # Do fragment analysis
 
-    worst_crmsd = fragment_analysis(design_path) 
-    threshold = 1
+    crmsds = fragment_analysis(design_path) 
+    worst_crmsd = max(crmsds)
+    threshold_worst_rcmsd = 1
+    mean_crmsd = np.mean(crmsds)
+    threshold_mean_crmsd = 0.7
 
     filter_dict['fragment_analysis'] = {'worst_crmsd' : worst_crmsd,
-                                        'pass' : worst_crmsd < threshold} 
+                                        'pass' : worst_crmsd < threshold_worst_crmsd} 
+    filter_dict['fragment_analysis_mean'] = {'mean_crmsd' : mean_crmsd,
+                                        'pass' : mean_crmsd < threshold_mean_crmsd}
 
     # Dump the results
 
@@ -189,7 +196,8 @@ def plot_filter_scores(input_path, save_figures=False):
             ('Holes', 'score', 2, 0),
             ('SSShapeComplementarity', 'score', 0.6, 1),
             ('BuriedUnsatHbonds', 'score', 20, 0),
-            ('fragment_analysis', 'worst_crmsd', 1, 0)]
+            ('fragment_analysis', 'worst_crmsd', 1, 0),
+            ('fragment_analysis_mean', 'mean_crmsd', 0.7, 0)]
    
     for key in keys:
         plt = plot_one_filter_score(design_list, key[0], key[1])
@@ -270,4 +278,4 @@ if __name__ == '__main__':
 
     print [(d['id'], d['task_info']['score']) for d in select_designs(data_path, 1000)]
 
-    #plot_fragment_quality_each_position(data_path, savefig=True)
+    #plot_fragment_quality_each_position(data_path, savefig=False)
