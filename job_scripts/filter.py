@@ -239,6 +239,12 @@ def plot_fragment_quality_each_position(input_path, savefig=False):
     else:
         plt.show()
 
+def plot_task_info(input_path, info_type):
+    '''Make a histogram of a specific task information.'''
+    design_list = load_designs(input_path)
+    data = [d['task_info'][info_type] for d in design_list]
+    PPSD.plot.plot_histogram(data, info_type, show_plot=True) 
+
 
 if __name__ == '__main__':
     
@@ -272,10 +278,12 @@ if __name__ == '__main__':
 
     ####DEBUG
 
-    filter_designs(data_path, num_jobs, job_id)
+    #filter_designs(data_path, num_jobs, job_id)
     
     #plot_filter_scores(data_path, save_figures=True)
 
     #print [(d['id'], d['task_info']['score']) for d in select_designs(data_path, 1000)]
 
     #plot_fragment_quality_each_position(data_path, savefig=False)
+
+    plot_task_info(data_path, 'run_time')
