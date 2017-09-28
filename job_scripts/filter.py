@@ -167,7 +167,7 @@ def select_designs(input_path, max_pass):
     for d in designs:
         passed = True
         for k in d['filter_info'].keys():
-            if k == 'fragment_analysis': continue ###DEBUG
+            if k in ['fragment_analysis', 'fragment_analysis_mean']: continue ###DEBUG
 
             passed = passed and d['filter_info'][k]['pass']
 
@@ -278,9 +278,9 @@ if __name__ == '__main__':
 
     ####DEBUG
 
-    filter_designs(data_path, num_jobs, job_id)
+    #filter_designs(data_path, num_jobs, job_id)
     
-    #plot_filter_scores(data_path, save_figures=False)
+    plot_filter_scores(data_path, save_figures=False)
 
     #print [(d['id'], d['task_info']['score']) for d in select_designs(data_path, 1000)]
 

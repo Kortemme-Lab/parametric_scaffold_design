@@ -29,10 +29,17 @@ def plot_histogram(data, xlabel, x_min=None, x_max=None, savefig_path=None, save
 
     return plt
 
-def plot_rectangular_box(left, right, bottom, top, color='r', linewidth=3.0, savefig_path=None, show_plot=True):
+def plot_rectangular_box(left, right, bottom, top, color='r', linewidth=3.0, savefig_path=None, show_plot=True, keep_plot_range=True):
     '''Plot a rectangular box'''
 
+    xlim = plt.xlim()
+    ylim = plt.ylim()
+
     plt.plot([left, left, right, right, left], [bottom, top, top, bottom, bottom], color=color, linewidth=linewidth)
+
+    if keep_plot_range:
+        plt.xlim(xlim)
+        plt.ylim(ylim)
 
     if savefig_path:
         plt.savefig(savefig_path)
