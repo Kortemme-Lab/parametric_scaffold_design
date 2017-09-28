@@ -107,7 +107,7 @@ def filter_one_design(design_path):
 
     crmsds = fragment_analysis(design_path) 
     worst_crmsd = max(crmsds)
-    threshold_worst_rcmsd = 1
+    threshold_worst_crmsd = 1
     mean_crmsd = np.mean(crmsds)
     threshold_mean_crmsd = 0.7
 
@@ -278,12 +278,12 @@ if __name__ == '__main__':
 
     ####DEBUG
 
-    #filter_designs(data_path, num_jobs, job_id)
+    filter_designs(data_path, num_jobs, job_id)
     
-    #plot_filter_scores(data_path, save_figures=True)
+    #plot_filter_scores(data_path, save_figures=False)
 
     #print [(d['id'], d['task_info']['score']) for d in select_designs(data_path, 1000)]
 
     #plot_fragment_quality_each_position(data_path, savefig=False)
 
-    plot_task_info(data_path, 'run_time')
+    #plot_task_info(data_path, 'run_time')
