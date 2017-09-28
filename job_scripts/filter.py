@@ -114,7 +114,7 @@ def filter_one_design(design_path):
     filter_dict['fragment_analysis'] = {'worst_crmsd' : worst_crmsd,
                                         'pass' : worst_crmsd < threshold_worst_crmsd} 
     filter_dict['fragment_analysis_mean'] = {'mean_crmsd' : mean_crmsd,
-                                        'pass' : mean_crmsd < threshold_mean_crmsd}
+                                             'pass' : bool(mean_crmsd < threshold_mean_crmsd)}
 
     # Dump the results
 
