@@ -72,8 +72,39 @@ def assemble(pose, movable_jumps, connections, seqpos_map):
     are converted to Rosetta indices by the seqpos_map.
     '''
     ssa = SecondaryStructureAssembler()
-    ssa.fast_design_rounds(5)
     ssa.design_loops_temp_ramping_cycles(50)
+
+    # Make a customized fast design mover
+
+    xmlobj = rosetta.protocols.rosetta_scripts.XmlObjects.create_from_string(
+    '''
+    <TASKOPERATIONS>
+        <LimitAromaChi2 name="limitchi2" include_trp="1" />
+        <LayerDesign name="layer_all" layer="core_boundary_surface_Nterm_Cterm" use_sidechain_neighbors="True" pore_radius="2.0" verbose="true" core="3.5" surface="0.95" >
+    		<Nterm>
+    			<all append="DEGHKNQRST" />
+    			<all exclude="CAFILMPVWY" />
+    		</Nterm>
+    		<Cterm>
+    			<all append="DEGHKNQRST" />
+    			<all exclude="CAFILMPVWY" />
+    		</Cterm>
+        </LayerDesign>
+    </TASKOPERATIONS>
+    <MOVERS>
+        <FastDesign name="fastdes" task_operations="limitchi2,layer_all" clear_designable_residues="0" repeats="5" ramp_down_constraints="0" />
+    </MOVERS>
+    ''')
+    fast_design = xmlobj.get_mover('fastdes')
+    ssa.set_fast_design_mover(fast_design)
+
+    ###DEBUG
+    #ssa.pass_dock_low_res(True)
+    #ssa.pass_dock_high_res(True)
+    #ssa.pass_build_loops(True)
+    #ssa.pass_fast_design(True)
+    #ssa.pass_design_loops(True)
+    ####DEBUG 
 
     for mj in movable_jumps:
         ssa.add_movable_jump(mj)
@@ -82,6 +113,8 @@ def assemble(pose, movable_jumps, connections, seqpos_map):
         ssa.add_connection(seqpos_map[c[0]], seqpos_map[c[1]], c[2])
 
     ssa.apply(pose)
+
+    #pose.energies().show() ###DEBUG
 
 def save_task_info(output_path, sequence, score, run_time):
     '''Save the task information into a json file.'''
@@ -136,19 +169,19 @@ def run_tasks(task_list, num_jobs, job_id):
                     t['movable_jumps'], t['connections'], t['output_path'])
 
 def pilot_run(data_path, num_jobs, job_id):
-    pdb_file1 = 'data/antiparallel_sheets_2_8/2_2_30_30/sheet.pdb'
+    pdb_file1 = 'data/antiparallel_sheets_3_8/2_2_30_30/sheet.pdb'
     pdb_file2 = 'data/straight_helices/15/helix.pdb'
     transformation_file = 'database/transformations/sheet_helix_transformation.json'
-    #res1 = ('B', 13) # For 3*8
-    res1 = ('B', 14) # For 2*8
+    res1 = ('B', 13) # For 3*8
+    #res1 = ('B', 14) # For 2*8
     res2 = ('A', 7)
-    #movable_jumps = [3] #For 3*8
-    movable_jumps = [2] #For 2*8
-    #connections = [((1, 'B', 16), (1, 'A', 1), 2), #For 3 * 8
-    #               ((1, 'C', 24), (1,'B', 9), 2),
-    #               ((2, 'A', 15), (1,'C', 17), 4)]
-    connections = [((1, 'A', 8), (1, 'B', 9), 2), #For 2 * 8
-                   ((2, 'A', 15), (1,'A', 1), 4)]
+    movable_jumps = [3] #For 3*8
+    #movable_jumps = [2] #For 2*8
+    connections = [((1, 'B', 16), (1, 'A', 1), 2), #For 3 * 8
+                   ((1, 'C', 24), (1,'B', 9), 2),
+                   ((2, 'A', 15), (1,'C', 17), 4)]
+    #connections = [((1, 'A', 8), (1, 'B', 9), 2), #For 2 * 8
+    #               ((2, 'A', 15), (1,'A', 1), 4)]
     output_path = data_path
 
     task_list = []
