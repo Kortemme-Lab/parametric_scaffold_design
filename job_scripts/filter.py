@@ -224,13 +224,21 @@ def plot_fragment_quality_each_position(input_path, savefig=False):
 
     import matplotlib.pyplot as plt
 
-    plt.scatter(X, Y)
+    # Plot the CRMSDs
+
+    plt.scatter(X, Y, s=1)
     plt.ylim(0, plt.ylim()[1])
     plt.axhline(1, color='r')
     
     plt.xlabel('Sequence position')
     plt.ylabel('CRMSD')
-   
+  
+    # Plot the median at each position
+
+    crmsds_each_position = np.transpose(np.array(crmsds_list))
+
+    plt.plot(range(1, len(crmsds_each_position) + 1), np.median(crmsds_each_position, axis=1))
+
     if savefig:
         if not os.path.exists(os.path.join(data_path, 'figures')):
             os.mkdir(os.path.join(data_path, 'figures'))
@@ -280,10 +288,10 @@ if __name__ == '__main__':
 
     #filter_designs(data_path, num_jobs, job_id)
     
-    plot_filter_scores(data_path, save_figures=True)
+    #plot_filter_scores(data_path, save_figures=False)
 
     #print [(d['id'], d['task_info']['score']) for d in select_designs(data_path, 1000)]
 
-    #plot_fragment_quality_each_position(data_path, savefig=False)
+    plot_fragment_quality_each_position(data_path, savefig=False)
 
     #plot_task_info(data_path, 'run_time')
