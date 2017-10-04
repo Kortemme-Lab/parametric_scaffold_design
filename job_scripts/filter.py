@@ -215,6 +215,9 @@ def plot_fragment_quality_each_position(input_path, savefig=False):
             crmsds_list.append(
                     PPSD.fragment_quality_analysis.FragmentQualityAnalyzer.get_position_crmsd(
                     fragment_discribing_file))
+        
+        import operator ###DEBUG
+        print d, max(enumerate(crmsds_list[-1]), key=operator.itemgetter(1)) ###DEBUG
     
     X = []
     Y = []
@@ -292,6 +295,6 @@ if __name__ == '__main__':
 
     #print [(d['id'], d['task_info']['score']) for d in select_designs(data_path, 1000)]
 
-    plot_fragment_quality_each_position(data_path, savefig=False)
+    plot_fragment_quality_each_position(data_path, savefig=True)
 
     #plot_task_info(data_path, 'run_time')

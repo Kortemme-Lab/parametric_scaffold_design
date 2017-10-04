@@ -72,7 +72,6 @@ def assemble(pose, movable_jumps, connections, seqpos_map):
     are converted to Rosetta indices by the seqpos_map.
     '''
     ssa = SecondaryStructureAssembler()
-    ssa.design_loops_temp_ramping_cycles(50)
 
     # Make a customized fast design mover
 
@@ -90,13 +89,63 @@ def assemble(pose, movable_jumps, connections, seqpos_map):
     			<all exclude="CAFILMPVWY" />
     		</Cterm>
         </LayerDesign>
+        <OperateOnResidueSubset name="restrict_turns">
+            <Index resnums="28,29,38,39" />
+            <RestrictAbsentCanonicalAASRLT aas="NDGPST"/>
+        </OperateOnResidueSubset>
     </TASKOPERATIONS>
     <MOVERS>
-        <FastDesign name="fastdes" task_operations="limitchi2,layer_all" clear_designable_residues="0" repeats="5" ramp_down_constraints="0" />
+        <FastDesign name="fastdes" task_operations="limitchi2,layer_all,restrict_turns" clear_designable_residues="0" repeats="5" ramp_down_constraints="0" />
     </MOVERS>
     ''')
     fast_design = xmlobj.get_mover('fastdes')
     ssa.set_fast_design_mover(fast_design)
+
+    # Make a customized loop design mover for DEBUG
+
+    xmlobj = rosetta.protocols.rosetta_scripts.XmlObjects.create_from_string(
+    '''
+    <TASKOPERATIONS>
+        <LayerDesign name="layer_all" layer="core_boundary_surface_Nterm_Cterm" use_sidechain_neighbors="True" pore_radius="2.0" verbose="true" core="3.5" surface="0.95" >
+    		<Nterm>
+    			<all append="DEGHKNQRST" />
+    			<all exclude="CAFILMPVWY" />
+    		</Nterm>
+    		<Cterm>
+    			<all append="DEGHKNQRST" />
+    			<all exclude="CAFILMPVWY" />
+    		</Cterm>
+        </LayerDesign>
+        <OperateOnResidueSubset name="restrict_turns">
+            <Index resnums="28,29,38,39" />
+            <RestrictAbsentCanonicalAASRLT aas="NDGPST"/>
+        </OperateOnResidueSubset>
+    </TASKOPERATIONS>
+    <MOVERS>
+        <LoopModeler name="loop_modeler" task_operations="layer_all,restrict_turns">
+            <Build skip="true"/>
+            <Centroid skip="true"/>
+        </LoopModeler>
+    </MOVERS>
+    '''
+    )
+    loop_modeler = xmlobj.get_mover('loop_modeler')
+    loops = rosetta.protocols.loops.Loops()
+    loops.add_loop(15, 20)
+    loops.add_loop(27, 30)
+    loops.add_loop(37, 40)
+    
+    tf = loop_modeler.get_task_factory()
+    restrict_to_loops = rosetta.protocols.toolbox.task_operations.RestrictToLoopsAndNeighbors()
+    restrict_to_loops.set_include_neighbors(True)
+    restrict_to_loops.set_cutoff_distance(6)
+    restrict_to_loops.set_design_neighbors(True)
+    restrict_to_loops.set_loops(loops)
+    tf.push_back(restrict_to_loops)
+
+    loop_modeler.fullatom_stage().set_temp_cycles(50, False)
+
+    ssa.set_loop_designer(loop_modeler)
 
     ###DEBUG
     #ssa.pass_dock_low_res(True)
