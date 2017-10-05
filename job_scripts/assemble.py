@@ -91,7 +91,7 @@ def assemble(pose, movable_jumps, connections, seqpos_map):
         </LayerDesign>
         <OperateOnResidueSubset name="restrict_turns">
             <Index resnums="28,29,38,39" />
-            <RestrictAbsentCanonicalAASRLT aas="NDG"/>
+            <RestrictAbsentCanonicalAASRLT aas="G"/>
         </OperateOnResidueSubset>
     </TASKOPERATIONS>
     <MOVERS>
@@ -118,7 +118,7 @@ def assemble(pose, movable_jumps, connections, seqpos_map):
         </LayerDesign>
         <OperateOnResidueSubset name="restrict_turns">
             <Index resnums="28,29,38,39" />
-            <RestrictAbsentCanonicalAASRLT aas="NDG"/>
+            <RestrictAbsentCanonicalAASRLT aas="G"/>
         </OperateOnResidueSubset>
     </TASKOPERATIONS>
     <MOVERS>
