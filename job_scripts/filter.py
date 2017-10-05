@@ -52,7 +52,7 @@ def helix_shape_complementarity_filter(pose, filter_dict):
 
 def buried_unsatisfied_hbond_filter(pose, filter_dict):
     '''Filter by the number of buried unsatisfied hydrogen bonds.'''
-    buhf = rosetta.protocols.rosetta_scripts.XmlObjects.static_get_filter('<BuriedUnsatHbonds name="buriedunsat" jump_number="0" cutoff="20" />')
+    buhf = rosetta.protocols.rosetta_scripts.XmlObjects.static_get_filter('<BuriedUnsatHbonds name="buriedunsat" jump_number="0" cutoff="5" />')
 
     filter_dict['BuriedUnsatHbonds'] = {'score' : buhf.report_sm(pose),
                                         'pass' : buhf.apply(pose)}
@@ -167,7 +167,7 @@ def select_designs(input_path, max_pass):
     for d in designs:
         passed = True
         for k in d['filter_info'].keys():
-            if k in ['fragment_analysis', 'fragment_analysis_mean']: continue ###DEBUG
+        #    if k in ['fragment_analysis', 'fragment_analysis_mean']: continue ###DEBUG
 
             passed = passed and d['filter_info'][k]['pass']
 
@@ -195,7 +195,7 @@ def plot_filter_scores(input_path, save_figures=False):
             ('PackStat', 'score', 0.6, 1),
             ('Holes', 'score', 2, 0),
             ('SSShapeComplementarity', 'score', 0.6, 1),
-            ('BuriedUnsatHbonds', 'score', 20, 0),
+            ('BuriedUnsatHbonds', 'score', 5, 0),
             ('fragment_analysis', 'worst_crmsd', 1, 0),
             ('fragment_analysis_mean', 'mean_crmsd', 0.7, 0)]
    
@@ -216,9 +216,10 @@ def plot_fragment_quality_each_position(input_path, savefig=False):
                     PPSD.fragment_quality_analysis.FragmentQualityAnalyzer.get_position_crmsd(
                     fragment_discribing_file))
         
-        import operator ###DEBUG
-        print d, max(enumerate(crmsds_list[-1]), key=operator.itemgetter(1)) ###DEBUG
-    
+        #import operator ###DEBUG
+        #print d, max(enumerate(crmsds_list[-1]), key=operator.itemgetter(1)) ###DEBUG
+        print d, crmsds_list[-1][24] ###DEBUG
+
     X = []
     Y = []
     for crmsds in crmsds_list:
@@ -289,12 +290,12 @@ if __name__ == '__main__':
 
     ####DEBUG
 
-    #filter_designs(data_path, num_jobs, job_id)
+    filter_designs(data_path, num_jobs, job_id)
     
-    #plot_filter_scores(data_path, save_figures=False)
+    #plot_filter_scores(data_path, save_figures=True)
 
     #print [(d['id'], d['task_info']['score']) for d in select_designs(data_path, 1000)]
 
-    plot_fragment_quality_each_position(data_path, savefig=True)
+    #plot_fragment_quality_each_position(data_path, savefig=True)
 
     #plot_task_info(data_path, 'run_time')
