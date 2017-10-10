@@ -64,7 +64,7 @@ def pre_assemble(pose1, pose2, res1, res2, frame_transformation):
     
     transform_chain(pose1, seqpos1, seqpos2, frame_transformation)
 
-def assemble(pose, movable_jumps, connections, seqpos_map):
+def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
     '''Assemble the secondary structures into a connected protein. 
     movable_jumps is a list of jump ids,
     connections is a list of tuples (res1, res2, connection_length) where residues are 
@@ -165,20 +165,19 @@ def assemble(pose, movable_jumps, connections, seqpos_map):
 
     #pose.energies().show() ###DEBUG
 
-def save_task_info(output_path, sequence, score, run_time):
+def save_task_info(output_path, task_info):
     '''Save the task information into a json file.'''
     with open(os.path.join(output_path, 'task_info.json'), 'w') as f:
-        json.dump({'sequence':sequence,
-                   'score':score,
-                   'run_time':run_time}, f)
+        json.dump(task_info, f)
 
 def assemble_from_files(pdb_file1, pdb_file2, transformation_file, res1, res2, movable_jumps, connections, output_path):
     '''Assemble two secondary structures given the PDB files, transformation
     file, transformation residues, movable jumps and connections.
     The outputs will be saved to the output_path.
     '''
+    task_info = {}
     start_time = datetime.datetime.now()
-   
+
     # Load the structures
 
     pose1 = rosetta.core.pose.Pose()
@@ -195,17 +194,21 @@ def assemble_from_files(pdb_file1, pdb_file2, transformation_file, res1, res2, m
    
     # Do the assembly
 
-    assemble(pose1, movable_jumps, connections, seqpos_map)
+    assemble(pose1, movable_jumps, connections, seqpos_map, task_info)
 
     pose1.dump_pdb(os.path.join(output_path, 'assembled.pdb'))
     PPSD.io.sequence_to_fasta_file(os.path.join(output_path, 'assembled.fasta'), 'assembled', pose1.sequence())
 
     end_time = datetime.datetime.now()
     run_time = end_time - start_time
-    
+
     # Save the task info
 
-    save_task_info(output_path, pose1.sequence(), pose1.energies().total_energy(), run_time.total_seconds())
+    task_info['sequence'] = pose1.sequence()
+    task_info['score'] = pose1.energies().total_energy()
+    task_info['run_time'] = run_time.total_seconds()
+
+    save_task_info(output_path, task_info)
 
 def run_tasks(task_list, num_jobs, job_id):
     '''Run tasks that belongs to the current job thread'''
