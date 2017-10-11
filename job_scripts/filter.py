@@ -129,17 +129,21 @@ def filter_designs(designs_path, num_jobs, job_id):
         if i % num_jobs == job_id:
             filter_one_design(design_path)
 
-def load_designs(input_path):
+def load_designs(input_path, load_task_info=True, load_filter_info=True):
     '''Load information of designs into a list.'''
     designs = []
 
     for d in os.listdir(input_path):
         try:
-            with open(os.path.join(input_path, d, 'task_info.json'), 'r') as f:
-                task_info = json.load(f)
+            task_info = {}
+            if load_task_info:
+                with open(os.path.join(input_path, d, 'task_info.json'), 'r') as f:
+                    task_info = json.load(f)
 
-            with open(os.path.join(input_path, d, 'filter_info.json'), 'r') as f:
-                filter_info = json.load(f)
+            filter_info = {}
+            if load_filter_info:
+                with open(os.path.join(input_path, d, 'filter_info.json'), 'r') as f:
+                    filter_info = json.load(f)
 
         except IOError:
             continue
@@ -253,8 +257,12 @@ def plot_fragment_quality_each_position(input_path, savefig=False):
 
 def plot_task_info(input_path, info_type):
     '''Make a histogram of a specific task information.'''
-    design_list = load_designs(input_path)
+    design_list = load_designs(input_path, load_filter_info=False)
     data = [d['task_info'][info_type] for d in design_list]
+    
+    #sorted_data = sorted(design_list, key=lambda d : d['task_info'][info_type]) ###DEBUG
+    #for d in sorted_data: print d ###DEBUG
+
     PPSD.plot.plot_histogram(data, info_type, show_plot=True) 
 
 
@@ -290,12 +298,12 @@ if __name__ == '__main__':
 
     ####DEBUG
 
-    #filter_designs(data_path, num_jobs, job_id)
+    filter_designs(data_path, num_jobs, job_id)
     
     #plot_filter_scores(data_path, save_figures=True)
 
     #print [(d['id'], d['task_info']['score']) for d in select_designs(data_path, 1000)]
 
-    plot_fragment_quality_each_position(data_path, savefig=True)
+    #plot_fragment_quality_each_position(data_path, savefig=True)
 
-    #plot_task_info(data_path, 'run_time')
+    #plot_task_info(data_path, 'sasa_3')

@@ -77,8 +77,11 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
     
     sasas = []
     for mj in movable_jumps:
-        sasas.append(rosetta.protocols.rosetta_scripts.XmlObjects.static_get_filter('<Sasa name="sasa" jump="' + str(mj) + '" confidence="1"/>'))
-    
+        sasas.append(rosetta.protocols.rosetta_scripts.XmlObjects.static_get_filter('<Sasa name="sasa" threshold="600" jump="' + str(mj) + '" confidence="1"/>'))
+   
+    for sasa in sasas:
+        ssa.add_docking_filter(sasa)
+
     # Make a customized fast design mover
 
     xmlobj = rosetta.protocols.rosetta_scripts.XmlObjects.create_from_string(
@@ -156,9 +159,9 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
     ###DEBUG
     #ssa.pass_dock_low_res(True)
     #ssa.pass_dock_high_res(True)
-    ssa.pass_build_loops(True)
-    ssa.pass_fast_design(True)
-    ssa.pass_design_loops(True)
+    #ssa.pass_build_loops(True)
+    #ssa.pass_fast_design(True)
+    #ssa.pass_design_loops(True)
     ####DEBUG 
 
     for mj in movable_jumps:
@@ -247,7 +250,7 @@ def pilot_run(data_path, num_jobs, job_id):
 
     task_list = []
 
-    for i in range(10):
+    for i in range(1000):
         task_list.append({'pdb_file1':pdb_file1,
                       'pdb_file2':pdb_file2,
                       'transformation_file':transformation_file,
