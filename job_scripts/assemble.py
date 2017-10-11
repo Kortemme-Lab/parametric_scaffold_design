@@ -172,8 +172,8 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
 
     ssa.apply(pose)
 
-    for i, sasa in enumerate(sasas): #DEBUG
-        task_info['sasa_{0}'.format(movable_jumps[i])] = sasa.report_sm(pose)
+    #for i, sasa in enumerate(sasas): #DEBUG
+    #    task_info['sasa_{0}'.format(movable_jumps[i])] = sasa.report_sm(pose)
 
     #pose.energies().show() ###DEBUG
 
