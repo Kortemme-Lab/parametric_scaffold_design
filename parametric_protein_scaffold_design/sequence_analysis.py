@@ -15,8 +15,8 @@ def combine_fasta_files(input_files, combined_file):
             with open(input_file, 'r') as i_f:
                 cf.write(i_f.read() + '\n')
 
-def make_sequence_logo(sequence_file, image_file):
+def make_sequence_logo(sequence_file, image_file, output_format='png_print'):
     '''Make sequence logos for a given (fasta) sequence file using the weblogo application.'''
-    cmd = ['weblogo', '-c', 'chemistry', '--format', 'PNG', '--fin', sequence_file, '--fout', image_file]
+    cmd = ['weblogo', '-c', 'chemistry', '--format', output_format, '--fin', sequence_file, '--fout', image_file]
     
     subprocess.check_call(cmd) 
