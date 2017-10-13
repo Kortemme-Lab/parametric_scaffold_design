@@ -16,6 +16,9 @@ setup(
         'matplotlib',
         'docopt',
     ],
+    extras_require = {
+        'weblogo':  ['weblogo']
+    },
     entry_points={
         'console_scripts': [
         ],
