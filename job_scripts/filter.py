@@ -281,6 +281,14 @@ def make_sequence_logo(data_path):
     PPSD.sequence_analysis.combine_fasta_files(sequences, sequence_file)
     PPSD.sequence_analysis.make_sequence_logo(sequence_file, image_file)
 
+def plot_sequence_identities(data_path):
+    '''Plot the number of sequences VS identity thresholds'''
+    design_list = load_designs(data_path, load_filter_info=False)
+    sorted_designs = sorted(design_list, key=lambda d:d['task_info']['score'])
+    sequences = [d['task_info']['sequence'] for d in sorted_designs]
+
+    PPSD.sequence_analysis.plot_sequence_identities(sequences)
+
 if __name__ == '__main__':
     
     data_path = sys.argv[1]
@@ -322,4 +330,7 @@ if __name__ == '__main__':
     #plot_fragment_quality_each_position(data_path, savefig=False)
 
     #plot_task_info(data_path, 'sasa_3')
-    make_sequence_logo(data_path)
+    
+    #make_sequence_logo(data_path)
+    
+    plot_sequence_identities(data_path)
