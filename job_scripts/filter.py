@@ -222,7 +222,7 @@ def plot_fragment_quality_each_position(input_path, savefig=False):
         
         #import operator ###DEBUG
         #print d, max(enumerate(crmsds_list[-1]), key=operator.itemgetter(1)) ###DEBUG
-        #print d, crmsds_list[-1][24] ###DEBUG
+        print d, crmsds_list[-1][24] ###DEBUG
 
     X = []
     Y = []
@@ -300,10 +300,10 @@ if __name__ == '__main__':
 
     filter_designs(data_path, num_jobs, job_id)
     
-    #plot_filter_scores(data_path, save_figures=True)
+    #plot_filter_scores(data_path, save_figures=False)
 
     #print [(d['id'], d['task_info']['score']) for d in select_designs(data_path, 1000)]
 
-    #plot_fragment_quality_each_position(data_path, savefig=True)
+    #plot_fragment_quality_each_position(data_path, savefig=False)
 
     #plot_task_info(data_path, 'sasa_3')
