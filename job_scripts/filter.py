@@ -265,6 +265,21 @@ def plot_task_info(input_path, info_type):
 
     PPSD.plot.plot_histogram(data, info_type, show_plot=True) 
 
+def make_sequence_logo(data_path):
+    '''Make a image of sequence logoes that shows the sequence profile''' 
+    if not os.path.exists(os.path.join(data_path, 'figures')):
+        os.mkdir(os.path.join(data_path, 'figures'))
+   
+    sequences = []
+    sequence_file = os.path.join(data_path, 'figures', 'combined_sequences.fasta')
+    image_file = os.path.join(data_path, 'figures', 'sequence_logo.png')
+
+    for d in os.listdir(data_path):
+        if os.path.exists(os.path.join(data_path, d, 'assembled.fasta')):
+            sequences.append(os.path.join(data_path, d, 'assembled.fasta'))
+
+    PPSD.sequence_analysis.combine_fasta_files(sequences, sequence_file)
+    PPSD.sequence_analysis.make_sequence_logo(sequence_file, image_file)
 
 if __name__ == '__main__':
     
@@ -298,7 +313,7 @@ if __name__ == '__main__':
 
     ####DEBUG
 
-    filter_designs(data_path, num_jobs, job_id)
+    #filter_designs(data_path, num_jobs, job_id)
     
     #plot_filter_scores(data_path, save_figures=False)
 
@@ -307,3 +322,4 @@ if __name__ == '__main__':
     #plot_fragment_quality_each_position(data_path, savefig=False)
 
     #plot_task_info(data_path, 'sasa_3')
+    make_sequence_logo(data_path)
