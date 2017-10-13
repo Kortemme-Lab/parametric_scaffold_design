@@ -91,3 +91,8 @@ def sequence_to_fasta_file(fasta_path, title, sequence):
             end = min(start + 80, len(sequence))
             f.write(sequence[start:end] + '\n')
 
+def save_task_info_file(output_path, task_info):
+    '''Save the task information into a json file.'''
+    with open(os.path.join(output_path, 'task_info.json'), 'w') as f:
+        json.dump(task_info, f)
+

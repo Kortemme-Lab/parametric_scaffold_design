@@ -177,11 +177,6 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
 
     #pose.energies().show() ###DEBUG
 
-def save_task_info(output_path, task_info):
-    '''Save the task information into a json file.'''
-    with open(os.path.join(output_path, 'task_info.json'), 'w') as f:
-        json.dump(task_info, f)
-
 def assemble_from_files(pdb_file1, pdb_file2, transformation_file, res1, res2, movable_jumps, connections, output_path):
     '''Assemble two secondary structures given the PDB files, transformation
     file, transformation residues, movable jumps and connections.
@@ -220,7 +215,7 @@ def assemble_from_files(pdb_file1, pdb_file2, transformation_file, res1, res2, m
     task_info['score'] = pose1.energies().total_energy()
     task_info['run_time'] = run_time.total_seconds()
 
-    save_task_info(output_path, task_info)
+    PPSD.io.save_task_info(output_path, task_info)
 
 def run_tasks(task_list, num_jobs, job_id):
     '''Run tasks that belongs to the current job thread'''
