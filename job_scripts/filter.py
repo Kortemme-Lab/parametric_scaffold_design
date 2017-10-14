@@ -321,7 +321,7 @@ if __name__ == '__main__':
 
     ####DEBUG
 
-    #filter_designs(data_path, num_jobs, job_id)
+    filter_designs(data_path, num_jobs, job_id)
     
     #plot_filter_scores(data_path, save_figures=False)
 
@@ -333,4 +333,4 @@ if __name__ == '__main__':
     
     #make_sequence_logo(data_path)
     
-    plot_sequence_identities(data_path)
+    #plot_sequence_identities(data_path)

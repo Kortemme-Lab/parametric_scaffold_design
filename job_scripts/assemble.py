@@ -112,6 +112,12 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
 
     # Make a customized loop design mover for DEBUG
 
+    #rosetta.basic.options.set_path_option('lh:db_path', '/netapp/home/xingjiepan/Databases/loophash_db')
+    loopsizes = rosetta.utility.vector1_int()
+    loopsizes.append(6)
+    loopsizes.append(8)
+    rosetta.basic.options.set_integer_vector_option('lh:loopsizes', loopsizes)
+
     xmlobj = rosetta.protocols.rosetta_scripts.XmlObjects.create_from_string(
     '''
     <TASKOPERATIONS>
@@ -131,7 +137,7 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
         </OperateOnResidueSubset>
     </TASKOPERATIONS>
     <MOVERS>
-        <LoopModeler name="loop_modeler" task_operations="layer_all,restrict_turns">
+        <LoopModeler name="loop_modeler" task_operations="layer_all,restrict_turns" config="loophash_kic" loophash_perturb_sequence="true" >
             <Build skip="true"/>
             <Centroid skip="true"/>
         </LoopModeler>
