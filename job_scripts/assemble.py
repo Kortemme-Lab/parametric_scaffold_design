@@ -137,7 +137,7 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
         </OperateOnResidueSubset>
     </TASKOPERATIONS>
     <MOVERS>
-        <LoopModeler name="loop_modeler" task_operations="layer_all,restrict_turns" config="loophash_kic" loophash_perturb_sequence="true" >
+        <LoopModeler name="loop_modeler" task_operations="layer_all" config="loophash_kic" loophash_perturb_sequence="true" >
             <Build skip="true"/>
             <Centroid skip="true"/>
         </LoopModeler>
