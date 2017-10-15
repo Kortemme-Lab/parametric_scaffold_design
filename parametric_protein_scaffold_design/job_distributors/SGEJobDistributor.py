@@ -25,7 +25,7 @@ class SGEJobDistributor(JobDistributor):
         hj = ['-hold_jid', hold_jid] if hold_jid else []
 
         qsub_command = ['qsub',
-                        '-cwd'] + hj \           
+                        '-cwd'] + hj \
                      + ['-N', self.script_name.split('/')[-1],
                         '-t', '1-{0}'.format(num_jobs),
                         '-l', 'h_rt={0}'.format(time),
