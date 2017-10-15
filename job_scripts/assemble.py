@@ -104,7 +104,7 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
         </OperateOnResidueSubset>
     </TASKOPERATIONS>
     <MOVERS>
-        <FastDesign name="fastdes" task_operations="limitchi2,layer_all,restrict_turns" clear_designable_residues="0" repeats="5" ramp_down_constraints="0" />
+        <FastDesign name="fastdes" task_operations="limitchi2,layer_all" clear_designable_residues="0" repeats="5" ramp_down_constraints="0" />
     </MOVERS>
     ''')
     fast_design = xmlobj.get_mover('fastdes')
@@ -135,9 +135,10 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
             <Index resnums="28,29,38,39" />
             <RestrictAbsentCanonicalAASRLT aas="GDN"/>
         </OperateOnResidueSubset>
+        <RestrictResiduesToRepacking name="loop_repack" residues="15,16,17,18,19,20,27,28,29,30,37,38,39,40" />
     </TASKOPERATIONS>
     <MOVERS>
-        <LoopModeler name="loop_modeler" task_operations="layer_all" config="loophash_kic" loophash_perturb_sequence="true" >
+        <LoopModeler name="loop_modeler" task_operations="layer_all,loop_repack" config="loophash_kic" loophash_perturb_sequence="true" >
             <Build skip="true"/>
             <Centroid skip="true"/>
         </LoopModeler>
@@ -221,7 +222,7 @@ def assemble_from_files(pdb_file1, pdb_file2, transformation_file, res1, res2, m
     task_info['score'] = pose1.energies().total_energy()
     task_info['run_time'] = run_time.total_seconds()
 
-    PPSD.io.save_task_info(output_path, task_info)
+    PPSD.io.save_task_info_file(output_path, task_info)
 
 def run_tasks(task_list, num_jobs, job_id):
     '''Run tasks that belongs to the current job thread'''
