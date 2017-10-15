@@ -12,18 +12,21 @@ class SGEJobDistributor(JobDistributor):
         self.script_arguments = script_arguments
   
     def run(self, num_jobs, time='5:00:00', mem_free_GB=3, scratch_space_GB=1,
-            architecture='linux-x64'):
+            architecture='linux-x64', hold_jid=None, keep_job_output_path=True):
         data_set_path = self.create_new_data_set(self.data_set_name)
         job_output_path = os.path.join(data_set_path, "job_outputs")
         
-        if os.path.exists(job_output_path): # Clear the job output path
+        if not keep_job_output_path and os.path.exists(job_output_path): # Clear the job output path
             shutil.rmtree(job_output_path)
-  
-        os.mkdir(job_output_path)
-  
+ 
+        if not os.path.exists(job_output_path):
+            os.mkdir(job_output_path)
+ 
+        hj = ['-hold_jid', hold_jid] if hold_jid else []
+
         qsub_command = ['qsub',
-                        '-cwd',
-                        '-N', self.script_name.split('/')[-1],
+                        '-cwd'] + hj \           
+                     + ['-N', self.script_name.split('/')[-1],
                         '-t', '1-{0}'.format(num_jobs),
                         '-l', 'h_rt={0}'.format(time),
                         '-l', 'mem_free={0}G'.format(mem_free_GB),

@@ -20,6 +20,12 @@ Options:
     --job-distributor=<JD>, -d=<JD>  [default: sequential]
         Job distributor that runs the jobs.
 
+    --hold-jid=<JID>, -h=<JID>  
+        For SGEJobDistributor, hold the job until some jobs are finished.
+
+    --keep-job-output-path, -k
+        For SGEJobDistributor, do not clear the job output path.
+
     --job-script-arguments=<JA>, -a=<JA>  [default: ]
         Arguments passed to the job script. The job script will run
         as:
@@ -38,7 +44,7 @@ if __name__ == '__main__':
 
     arguments = docopt.docopt(__doc__)
     
-    # Convert job-script arguements into a list
+    # Convert job-script arguments into a list
     
     job_script_arguments = arguments['--job-script-arguments'].split()
     
@@ -58,7 +64,7 @@ if __name__ == '__main__':
     
         num_jobs = arguments['--num-jobs'] if arguments['--num-jobs'] else 1
     
-        job_distributor.run(num_jobs)
+        job_distributor.run(num_jobs, hold_jid=arguments['--hold-jid'], keep_job_output_path=arguments['--keep-job-output-path'])
     
     else:
         raise IOError('Unknown job distributor: {0}'.format(arguments['--job-distributor']))
