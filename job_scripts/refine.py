@@ -27,6 +27,7 @@ def refine(pose, repack_positions=[]):
     '''
     <TASKOPERATIONS>
         <LimitAromaChi2 name="limitchi2" include_trp="1" />
+        <ExtraRotamersGeneric name="ex12" ex1="true" ex2="true" />
         <LayerDesign name="layer_all" layer="core_boundary_surface_Nterm_Cterm" use_sidechain_neighbors="True" pore_radius="2.0" verbose="true" core="3.5" surface="0.95" >
     		<Nterm>
     			<all append="DEGHKNQRST" />
@@ -40,7 +41,7 @@ def refine(pose, repack_positions=[]):
         {0}
     </TASKOPERATIONS>
     <MOVERS>
-        <FastDesign name="fastdes" task_operations="limitchi2,layer_all{1}" clear_designable_residues="0" repeats="5" ramp_down_constraints="0" />
+        <FastDesign name="fastdes" task_operations="limitchi2,ex12,layer_all{1}" clear_designable_residues="1" repeats="5" ramp_down_constraints="0" />
     </MOVERS>
     '''.format(restrict_repacking_operation, ', restrict_repacking' if len(repack_positions) > 0 else ''))
     fast_design = xmlobj.get_mover('fastdes')
@@ -89,7 +90,7 @@ def pilot_run(data_path, num_jobs, job_id):
 
     for i in range(1000):
         task_list.append({'input_pdb':input_pdb,
-                          'repack_positions' : [],
+                          'repack_positions' : [15,16,17,18,19,20,27,28,29,30,37,38,39,40],
                           'output_path':os.path.join(output_path, str(i))})
     
     run_tasks(task_list, num_jobs, job_id)

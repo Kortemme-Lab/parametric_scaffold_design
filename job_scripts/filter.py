@@ -152,7 +152,7 @@ def load_designs(input_path, load_task_info=True, load_filter_info=True):
                         'path':os.path.join(input_path, d),
                         'task_info':task_info,
                         'filter_info':filter_info})
-   
+
     return sorted(designs, key=lambda x : x['task_info']['score'])
 
 def select_designs(input_path, max_pass):
