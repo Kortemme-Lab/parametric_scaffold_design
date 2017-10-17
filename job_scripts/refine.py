@@ -43,7 +43,7 @@ def refine(pose, repack_positions=[]):
     <MOVERS>
         <FastDesign name="fastdes" task_operations="limitchi2,ex12,layer_all{1}" clear_designable_residues="1" repeats="5" ramp_down_constraints="0" />
     </MOVERS>
-    '''.format(restrict_repacking_operation, ', restrict_repacking' if len(repack_positions) > 0 else ''))
+    '''.format(restrict_repacking_operation, ',restrict_repacking' if len(repack_positions) > 0 else ''))
     fast_design = xmlobj.get_mover('fastdes')
 
     # Refine
