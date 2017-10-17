@@ -45,5 +45,5 @@ if __name__ == '__main__':
     
     pyrosetta.init()
 
-    make_straight_helices(data_path, [10, 15, 20]) 
+    make_straight_helices(data_path, list(range(4, 21))) 
 
