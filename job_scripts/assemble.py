@@ -48,21 +48,39 @@ def make_seqpos_map(pose1, pose2):
 
     return seqpos_map
 
-def pre_assemble(pose1, pose2, res1, res2, frame_transformation):
-    '''Assemble two poses into one file given the relative
-    orientation of one residue from each structures.
+def pre_assemble(poses, res_pairs, frame_transformations):
+    '''Assemble a list of poses into one pose given the relative
+    orientation of one residue from each structures. The resulting structure
+    will be saved in the first pose.
     
-    Residues are specified by a tuple of (chain_id, residue_id).
+    Residues are specified by a pair of tuples of (pose_id, chain_id, residue_id).
     '''
-    
-    seqpos1 = pose1.pdb_info().pdb2pose(res1[0], res1[1])
-    seqpos2 = pose2.pdb_info().pdb2pose(res2[0], res2[1]) + pose1.size()
-    
-    # Merge pose2 into pose1
 
-    pose1.append_pose_by_jump(pose2, pose1.size())
+    def res_to_seqpos(res, poses_before_assemble):
+        '''Convert a residue into the seqpos of the assembled structure'''
+        offset = 0
+        for i in range(res[0]):
+            offset += poses_before_assemble[i].size()
+
+        return offset + poses_before_assemble[res[0]].pdb_info().pdb2pose(res[1], res[2])
+
+   
+    # Get the seqposes after assembly
     
-    transform_chain(pose1, seqpos1, seqpos2, frame_transformation)
+    seqpos_pairs = []
+    
+    for res1, res2 in res_pairs:
+        seqpos_pairs.append((res_to_seqpos(res1, poses), res_to_seqpos(res2, poses)))
+
+    # Merge poses into pose1
+
+    for i in range(1, len(poses)):
+        poses[0].append_pose_by_jump(poses[i], poses[0].size())
+   
+    # Transform the chains
+
+    for i in range(len(seqpos_pairs)):
+        transform_chain(poses[0], seqpos_pairs[i][0], seqpos_pairs[i][1], frame_transformations[i])
 
 def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
     '''Assemble the secondary structures into a connected protein. 
@@ -164,11 +182,11 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
     ssa.set_loop_designer(loop_modeler)
 
     ###DEBUG
-    #ssa.pass_dock_low_res(True)
-    #ssa.pass_dock_high_res(True)
-    #ssa.pass_build_loops(True)
-    #ssa.pass_fast_design(True)
-    #ssa.pass_design_loops(True)
+    ssa.pass_dock_low_res(True)
+    ssa.pass_dock_high_res(True)
+    ssa.pass_build_loops(True)
+    ssa.pass_fast_design(True)
+    ssa.pass_design_loops(True)
     ####DEBUG 
 
     for mj in movable_jumps:
@@ -177,7 +195,7 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
     for c in connections:
         ssa.add_connection(seqpos_map[c[0]], seqpos_map[c[1]], c[2])
 
-    ssa.apply(pose)
+    #ssa.apply(pose)
 
     #for i, sasa in enumerate(sasas): #DEBUG
     #    task_info['sasa_{0}'.format(movable_jumps[i])] = sasa.report_sm(pose)
@@ -204,7 +222,7 @@ def assemble_from_files(pdb_file1, pdb_file2, transformation_file, res1, res2, m
     # Do the pre-assembly
 
     T = PPSD.io.load_rigid_body_transformation_from_file(transformation_file)
-    pre_assemble(pose1, pose2, res1, res2, T)
+    pre_assemble([pose1, pose2], [([0] + list(res1), [1] + list(res2))], [T])
    
     # Do the assembly
 
@@ -252,7 +270,7 @@ def pilot_run(data_path, num_jobs, job_id):
 
     task_list = []
 
-    for i in range(1000):
+    for i in range(1):
         task_list.append({'pdb_file1':pdb_file1,
                       'pdb_file2':pdb_file2,
                       'transformation_file':transformation_file,
