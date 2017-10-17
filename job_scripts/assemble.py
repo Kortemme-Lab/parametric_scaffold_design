@@ -200,7 +200,7 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
 
     #pose.energies().show() ###DEBUG
 
-def assemble_from_files(pdb_file1, pdb_file2, transformation_file, res1, res2, movable_jumps, connections, output_path):
+def assemble_from_files(pdb_files, transformation_files, transformation_residue_pairs, movable_jumps, connections, output_path):
     '''Assemble two secondary structures given the PDB files, transformation
     file, transformation residues, movable jumps and connections.
     The outputs will be saved to the output_path.
@@ -210,32 +210,35 @@ def assemble_from_files(pdb_file1, pdb_file2, transformation_file, res1, res2, m
 
     # Load the structures
 
-    pose1 = rosetta.core.pose.Pose()
-    rosetta.core.import_pose.pose_from_file(pose1, pdb_file1)
-    pose2 = rosetta.core.pose.Pose()
-    rosetta.core.import_pose.pose_from_file(pose2, pdb_file2)
+    poses = []
+    for pdb_file in pdb_files:
+        poses.append( rosetta.core.pose.Pose() )
+        rosetta.core.import_pose.pose_from_file(poses[-1], pdb_file)
 
-    seqpos_map = make_seqpos_map([pose1, pose2])
+    seqpos_map = make_seqpos_map(poses)
 
     # Do the pre-assembly
 
-    T = PPSD.io.load_rigid_body_transformation_from_file(transformation_file)
-    pre_assemble([pose1, pose2], [([0] + list(res1), [1] + list(res2))], [T])
-   
+    Ts = [PPSD.io.load_rigid_body_transformation_from_file(tf) for tf in transformation_files]
+
+    pre_assemble(poses, transformation_residue_pairs, Ts)
+  
+    merged_pose = poses[0]
+
     # Do the assembly
 
-    assemble(pose1, movable_jumps, connections, seqpos_map, task_info)
+    assemble(merged_pose, movable_jumps, connections, seqpos_map, task_info)
 
-    pose1.dump_pdb(os.path.join(output_path, 'assembled.pdb'))
-    PPSD.io.sequence_to_fasta_file(os.path.join(output_path, 'assembled.fasta'), 'assembled', pose1.sequence())
+    merged_pose.dump_pdb(os.path.join(output_path, 'assembled.pdb'))
+    PPSD.io.sequence_to_fasta_file(os.path.join(output_path, 'assembled.fasta'), 'assembled', merged_pose.sequence())
 
     end_time = datetime.datetime.now()
     run_time = end_time - start_time
 
     # Save the task info
 
-    task_info['sequence'] = pose1.sequence()
-    task_info['score'] = pose1.energies().total_energy()
+    task_info['sequence'] = merged_pose.sequence()
+    task_info['score'] = merged_pose.energies().total_energy()
     task_info['run_time'] = run_time.total_seconds()
 
     PPSD.io.save_task_info_file(output_path, task_info)
@@ -247,16 +250,16 @@ def run_tasks(task_list, num_jobs, job_id):
             if not os.path.exists(t['output_path']): 
                 os.makedirs(t['output_path'])
 
-            assemble_from_files(t['pdb_file1'], t['pdb_file2'], t['transformation_file'], t['res1'], t['res2'],
+            assemble_from_files(t['pdb_files'], t['transformation_files'], t['transformation_residue_pairs'],
                     t['movable_jumps'], t['connections'], t['output_path'])
 
 def pilot_run(data_path, num_jobs, job_id):
     pdb_file1 = 'data/antiparallel_sheets_3_8/2_2_30_30/sheet.pdb'
     pdb_file2 = 'data/straight_helices/15/helix.pdb'
     transformation_file = 'database/transformations/sheet_helix_transformation.json'
-    res1 = ('B', 13) # For 3*8
-    #res1 = ('B', 14) # For 2*8
-    res2 = ('A', 7)
+    res1 = (0, 'B', 13) # For 3*8
+    #res1 = (0, 'B', 14) # For 2*8
+    res2 = (1, 'A', 7)
     movable_jumps = [3] #For 3*8
     #movable_jumps = [2] #For 2*8
     connections = [((0, 'B', 16), (0, 'A', 1), 2), #For 3 * 8
@@ -269,11 +272,9 @@ def pilot_run(data_path, num_jobs, job_id):
     task_list = []
 
     for i in range(1):
-        task_list.append({'pdb_file1':pdb_file1,
-                      'pdb_file2':pdb_file2,
-                      'transformation_file':transformation_file,
-                      'res1':res1,
-                      'res2':res2,
+        task_list.append({'pdb_files': [pdb_file1, pdb_file2],
+                      'transformation_files': [transformation_file],
+                      'transformation_residue_pairs':[(res1, res2)],
                       'movable_jumps':movable_jumps,
                       'connections':connections,
                       'output_path':os.path.join(output_path, str(i))})
