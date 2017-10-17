@@ -90,7 +90,7 @@ def pilot_run(data_path, num_jobs, job_id):
 
     for i in range(1000):
         task_list.append({'input_pdb':input_pdb,
-                          'repack_positions' : [15,16,17,18,19,20,27,28,29,30,37,38,39,40],
+                          'repack_positions' : [],# [15,16,17,18,19,20,27,28,29,30,37,38,39,40],
                           'output_path':os.path.join(output_path, str(i))})
     
     run_tasks(task_list, num_jobs, job_id)
