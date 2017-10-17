@@ -31,20 +31,19 @@ def save_residue_transformation(pdb_file, res1, res2, fout):
     T = calc_residue_frame_transformation(pose, seqpos1, seqpos2)
     PPSD.io.write_rigid_body_transformation_to_file(T, fout)
 
-def make_seqpos_map(pose1, pose2):
+def make_seqpos_map(poses):
     '''Make a map from the (structure_id, chain, pdb_number)
-    to the merged pose.
+    to the merged pose. The structure_id starts from 0.
     '''
     seqpos_map = {}
 
-    info1 = pose1.pdb_info()
-    info2 = pose2.pdb_info()
+    infos = [pose.pdb_info() for pose in poses]
 
-    for i in range(1, pose1.size() + 1):
-        seqpos_map[(1, str(info1.chain(i)), int(info1.number(i)))] = i
-
-    for i in range(1, pose2.size() + 1):
-        seqpos_map[(2, str(info2.chain(i)), int(info2.number(i)))] = i + pose1.size()
+    offset = 0
+    for i in range(len(poses)):
+        for j in range(1, poses[i].size() + 1):
+            seqpos_map[(i, str(infos[i].chain(j)), int(infos[i].number(j)))] = j + offset
+        offset += poses[i].size()
 
     return seqpos_map
 
@@ -63,7 +62,6 @@ def pre_assemble(poses, res_pairs, frame_transformations):
             offset += poses_before_assemble[i].size()
 
         return offset + poses_before_assemble[res[0]].pdb_info().pdb2pose(res[1], res[2])
-
    
     # Get the seqposes after assembly
     
@@ -182,9 +180,9 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
     ssa.set_loop_designer(loop_modeler)
 
     ###DEBUG
-    ssa.pass_dock_low_res(True)
-    ssa.pass_dock_high_res(True)
-    ssa.pass_build_loops(True)
+    #ssa.pass_dock_low_res(True)
+    #ssa.pass_dock_high_res(True)
+    #ssa.pass_build_loops(True)
     ssa.pass_fast_design(True)
     ssa.pass_design_loops(True)
     ####DEBUG 
@@ -195,7 +193,7 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
     for c in connections:
         ssa.add_connection(seqpos_map[c[0]], seqpos_map[c[1]], c[2])
 
-    #ssa.apply(pose)
+    ssa.apply(pose)
 
     #for i, sasa in enumerate(sasas): #DEBUG
     #    task_info['sasa_{0}'.format(movable_jumps[i])] = sasa.report_sm(pose)
@@ -217,7 +215,7 @@ def assemble_from_files(pdb_file1, pdb_file2, transformation_file, res1, res2, m
     pose2 = rosetta.core.pose.Pose()
     rosetta.core.import_pose.pose_from_file(pose2, pdb_file2)
 
-    seqpos_map = make_seqpos_map(pose1, pose2)
+    seqpos_map = make_seqpos_map([pose1, pose2])
 
     # Do the pre-assembly
 
@@ -261,11 +259,11 @@ def pilot_run(data_path, num_jobs, job_id):
     res2 = ('A', 7)
     movable_jumps = [3] #For 3*8
     #movable_jumps = [2] #For 2*8
-    connections = [((1, 'B', 16), (1, 'A', 1), 2), #For 3 * 8
-                   ((1, 'C', 24), (1,'B', 9), 2),
-                   ((2, 'A', 15), (1,'C', 17), 4)]
-    #connections = [((1, 'A', 8), (1, 'B', 9), 2), #For 2 * 8
-    #               ((2, 'A', 15), (1,'A', 1), 4)]
+    connections = [((0, 'B', 16), (0, 'A', 1), 2), #For 3 * 8
+                   ((0, 'C', 24), (0,'B', 9), 2),
+                   ((1, 'A', 15), (0,'C', 17), 4)]
+    #connections = [((0, 'A', 8), (0, 'B', 9), 2), #For 2 * 8
+    #               ((1, 'A', 15), (0,'A', 1), 4)]
     output_path = data_path
 
     task_list = []
