@@ -148,10 +148,18 @@ def load_designs(input_path, load_task_info=True, load_filter_info=True):
         except IOError:
             continue
 
-        designs.append({'id':d,
-                        'path':os.path.join(input_path, d),
-                        'task_info':task_info,
-                        'filter_info':filter_info})
+        design_dict = {'id':d,
+                       'path':os.path.join(input_path, d),
+                       'task_info':task_info,
+                       'filter_info':filter_info}
+
+        pdb_file = os.path.join(design_dict['path'], 'assembled.pdb')
+        fragment_discribing_file = os.path.join(design_dict['path'], 'frags.fsc.200.9mers')
+
+        if os.path.exists(pdb_file): design_dict['pdb_file'] = pdb_file
+        if os.path.exists(fragment_discribing_file): design_dict['fragment_discribing_file'] = fragment_discribing_file
+
+        designs.append(design_dict)
 
     return sorted(designs, key=lambda x : x['task_info']['score'])
 
@@ -222,7 +230,7 @@ def plot_fragment_quality_each_position(input_path, savefig=False):
         
         #import operator ###DEBUG
         #print d, max(enumerate(crmsds_list[-1]), key=operator.itemgetter(1)) ###DEBUG
-        print d, crmsds_list[-1][24] ###DEBUG
+        #print d, crmsds_list[-1][24] ###DEBUG
 
     X = []
     Y = []
@@ -289,6 +297,74 @@ def plot_sequence_identities(data_path):
 
     PPSD.sequence_analysis.plot_sequence_identities(sequences)
 
+def extract_good_linker_fragments(data_path, threshold, loops):
+    '''Extract torsions and sequences of linker loops whose fragment
+    qualities are below a threshold. Loops are defined by a pair of 
+    (start, stop). The fragment that contains the loop at middle will 
+    be used for evaluation.
+    '''
+    # Get the fragment positions corresponding to the loops
+    
+    fragment_positions = [int((l[1] + l[0]) / 2 - 4) for l in loops]
+  
+    good_fragments = []
+    for l in loops:
+        good_fragments.append({'start':l[0], 'stop':l[1], 'fragments':[]})
+
+    # Find the good quality loops from the designs
+
+    designs = load_designs(data_path)
+
+    for d in designs:
+        if (not 'pdb_file' in d.keys()) or (not 'fragment_discribing_file' in d.keys()):
+            continue
+                   
+        # Find loops to be stored
+
+        crmsd = PPSD.fragment_quality_analysis.FragmentQualityAnalyzer.get_position_crmsd(
+                    d['fragment_discribing_file'])
+
+        loop_ids_to_store = []
+        for i in range(len(loops)):
+            if crmsd[fragment_positions[i]] < threshold:
+                loop_ids_to_store.append(i)
+
+        if len(loop_ids_to_store) == 0: continue
+       
+        # Save the good quality loops
+
+        pose = rosetta.core.pose.Pose()
+        rosetta.core.import_pose.pose_from_file(pose, d['pdb_file'])
+        
+        for i in loop_ids_to_store:
+            sequence = []
+            torsions = []
+            
+            for seqpos in range(loops[i][0], loops[i][1] + 1):
+                sequence.append(pose.residue(seqpos).name3())
+                torsions.append(pose.phi(seqpos)) 
+                torsions.append(pose.psi(seqpos)) 
+                torsions.append(pose.omega(seqpos)) 
+            
+            good_fragments[i]['fragments'].append({'quality': crmsd[fragment_positions[i]],
+                                                   'sequence' : sequence,
+                                                   'torsions' : torsions})
+
+    # Print the number of fragments found
+
+    for gf in good_fragments:
+        print "Find {0} good fragments for the loop ({1}, {2})".format(len(gf['fragments']), gf['start'], gf['stop'])
+
+    # Save the fragments
+
+    fragment_path = os.path.join(data_path, 'selected_fragments')
+    if not os.path.exists(fragment_path):
+        os.mkdir(fragment_path)
+
+    with open(os.path.join(fragment_path, 'fragments.json'), 'w') as fout:
+        json.dump(good_fragments, fout)
+
+
 if __name__ == '__main__':
     
     data_path = sys.argv[1]
@@ -321,7 +397,7 @@ if __name__ == '__main__':
 
     ####DEBUG
 
-    filter_designs(data_path, num_jobs, job_id)
+    #filter_designs(data_path, num_jobs, job_id)
     
     #plot_filter_scores(data_path, save_figures=False)
 
@@ -334,3 +410,5 @@ if __name__ == '__main__':
     #make_sequence_logo(data_path)
     
     #plot_sequence_identities(data_path)
+
+    extract_good_linker_fragments(data_path, 0.5, [(15,20), (27,30), (37,40)])
