@@ -100,8 +100,6 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
 
     # Make a customized fast design mover
 
-    rosetta.basic.options.set_boolean_option('relax:bb_move', False) #Disable backbone DOFs in fast design
-
     xmlobj = rosetta.protocols.rosetta_scripts.XmlObjects.create_from_string(
     '''
     <TASKOPERATIONS>
@@ -122,7 +120,9 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
         </OperateOnResidueSubset>
     </TASKOPERATIONS>
     <MOVERS>
-        <FastDesign name="fastdes" task_operations="limitchi2,layer_all" clear_designable_residues="0" repeats="5" ramp_down_constraints="0" />
+        <FastDesign name="fastdes" task_operations="limitchi2,layer_all" clear_designable_residues="0" repeats="5" ramp_down_constraints="0" >
+            <MoveMap bb="false" chi="true" jump="false" />
+        </FastDesign>
     </MOVERS>
     ''')
     fast_design = xmlobj.get_mover('fastdes')
