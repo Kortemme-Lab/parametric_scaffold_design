@@ -348,7 +348,8 @@ def extract_good_linker_fragments(data_path, threshold, loops):
             
             good_fragments[i]['fragments'].append({'quality': crmsd[fragment_positions[i]],
                                                    'sequence' : sequence,
-                                                   'torsions' : torsions})
+                                                   'torsions' : torsions,
+                                                   'design_id' : d['id']})
 
     # Print the number of fragments found
 

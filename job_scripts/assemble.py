@@ -100,6 +100,8 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
 
     # Make a customized fast design mover
 
+    rosetta.basic.options.set_boolean_option('relax:bb_move', False) #Disable backbone DOFs in fast design
+
     xmlobj = rosetta.protocols.rosetta_scripts.XmlObjects.create_from_string(
     '''
     <TASKOPERATIONS>
@@ -271,7 +273,7 @@ def pilot_run(data_path, num_jobs, job_id):
 
     task_list = []
 
-    for i in range(1):
+    for i in range(1000):
         task_list.append({'pdb_files': [pdb_file1, pdb_file2],
                       'transformation_files': [transformation_file],
                       'transformation_residue_pairs':[(res1, res2)],
