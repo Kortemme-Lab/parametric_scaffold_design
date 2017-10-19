@@ -273,21 +273,27 @@ def plot_task_info(input_path, info_type):
 
     PPSD.plot.plot_histogram(data, info_type, show_plot=True) 
 
-def make_sequence_logo(data_path):
+def make_sequence_logo(design_list, title):
     '''Make a image of sequence logoes that shows the sequence profile''' 
     if not os.path.exists(os.path.join(data_path, 'figures')):
         os.mkdir(os.path.join(data_path, 'figures'))
    
     sequences = []
-    sequence_file = os.path.join(data_path, 'figures', 'combined_sequences.fasta')
-    image_file = os.path.join(data_path, 'figures', 'sequence_logo.png')
+    sequence_file = os.path.join(data_path, 'figures', '{0}_combined_sequences.fasta'.format(title))
+    image_file = os.path.join(data_path, 'figures', '{0}_sequence_logo.png'.format(title))
 
-    for d in os.listdir(data_path):
-        if os.path.exists(os.path.join(data_path, d, 'assembled.fasta')):
-            sequences.append(os.path.join(data_path, d, 'assembled.fasta'))
+    for d in design_list:
+        if os.path.exists(os.path.join(d['path'], 'assembled.fasta')):
+            sequences.append(os.path.join(d['path'], 'assembled.fasta'))
 
     PPSD.sequence_analysis.combine_fasta_files(sequences, sequence_file)
     PPSD.sequence_analysis.make_sequence_logo(sequence_file, image_file)
+
+
+def make_sequence_logo_for_all_designs(data_path):
+    '''Make a image of sequence logoes that shows the sequence profile for all designs''' 
+    design_list = load_designs(data_path)
+    make_sequence_logo(design_list, 'all')
 
 def plot_sequence_identities(data_path):
     '''Plot the number of sequences VS identity thresholds'''
@@ -398,17 +404,20 @@ if __name__ == '__main__':
 
     ####DEBUG
 
-    filter_designs(data_path, num_jobs, job_id)
+    #filter_designs(data_path, num_jobs, job_id)
     
     #plot_filter_scores(data_path, save_figures=False)
 
-    #print [(d['id'], d['task_info']['score']) for d in select_designs(data_path, 1000)]
+    selected_designs = select_designs(data_path, 1000)
+    #print [(d['id'], d['task_info']['score']) for d in selected_designs]
+    #PPSD.sequence_analysis.plot_sequence_identities([d['task_info']['sequence'] for d in selected_designs])
+    make_sequence_logo(selected_designs, 'selected_designs')
 
     #plot_fragment_quality_each_position(data_path, savefig=False)
 
     #plot_task_info(data_path, 'sasa_3')
     
-    #make_sequence_logo(data_path)
+    #make_sequence_logo_for_all_designs(data_path)
     
     #plot_sequence_identities(data_path)
 
