@@ -87,6 +87,12 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
     specified by PDB indexing as (pose_id, chain, res_id). The PDB indices 
     are converted to Rosetta indices by the seqpos_map.
     '''
+    # Turn off the tracers that dump a lot of outputs
+
+    tracers = rosetta.utility.vector1_string()
+    tracers.append('protocols.loops.loops_main')
+    rosetta.basic.options.set_string_vector_option('out:mute', tracers)
+    
     ssa = SecondaryStructureAssembler()
 
     # Make docking filters
