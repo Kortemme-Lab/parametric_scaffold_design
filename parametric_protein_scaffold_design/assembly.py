@@ -98,8 +98,8 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info, sasa_thres
     #ssa.pass_dock_low_res(True)
     #ssa.pass_dock_high_res(True)
     #ssa.pass_build_loops(True)
-    ssa.pass_fast_design(True)
-    ssa.pass_design_loops(True)
+    #ssa.pass_fast_design(True)
+    #ssa.pass_design_loops(True)
     ####DEBUG 
 
     for mj in movable_jumps:
