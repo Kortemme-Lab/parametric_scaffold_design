@@ -161,7 +161,10 @@ def load_designs(input_path, load_task_info=True, load_filter_info=True):
 
         designs.append(design_dict)
 
-    return sorted(designs, key=lambda x : x['task_info']['score'])
+    try:
+        return sorted(designs, key=lambda x : x['task_info']['score'])
+    except:
+        return designs
 
 def select_designs(input_path, max_pass):
     '''Select the designs in the input path that pass all the filters.
@@ -201,7 +204,7 @@ def plot_filter_scores(input_path, save_figures=False):
     if not os.path.exists(figure_path):
         os.mkdir(figure_path)
     
-    design_list = load_designs(input_path)
+    design_list = load_designs(input_path, load_task_info=False)
 
     keys = [('SSPrediction', 'score', 0.75, 1),
             ('PackStat', 'score', 0.6, 1),
@@ -404,14 +407,14 @@ if __name__ == '__main__':
 
     ####DEBUG
 
-    #filter_designs(data_path, num_jobs, job_id)
+    filter_designs(data_path, num_jobs, job_id)
     
-    #plot_filter_scores(data_path, save_figures=False)
+    #plot_filter_scores(data_path, save_figures=True)
 
-    selected_designs = select_designs(data_path, 1000)
+    #selected_designs = select_designs(data_path, 1000)
     #print [(d['id'], d['task_info']['score']) for d in selected_designs]
     #PPSD.sequence_analysis.plot_sequence_identities([d['task_info']['sequence'] for d in selected_designs])
-    make_sequence_logo(selected_designs, 'selected_designs')
+    #make_sequence_logo(selected_designs, 'selected_designs')
 
     #plot_fragment_quality_each_position(data_path, savefig=False)
 
