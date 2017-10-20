@@ -80,7 +80,7 @@ def pre_assemble(poses, res_pairs, frame_transformations):
     for i in range(len(seqpos_pairs)):
         transform_chain(poses[0], seqpos_pairs[i][0], seqpos_pairs[i][1], frame_transformations[i])
 
-def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
+def assemble(pose, movable_jumps, connections, seqpos_map, task_info, sasa_threshold=600):
     '''Assemble the secondary structures into a connected protein. 
     movable_jumps is a list of jump ids,
     connections is a list of tuples (res1, res2, connection_length) where residues are 
@@ -95,11 +95,30 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
     
     ssa = SecondaryStructureAssembler()
 
+    ###DEBUG
+    #ssa.pass_dock_low_res(True)
+    #ssa.pass_dock_high_res(True)
+    #ssa.pass_build_loops(True)
+    ssa.pass_fast_design(True)
+    ssa.pass_design_loops(True)
+    ####DEBUG 
+
+    for mj in movable_jumps:
+        ssa.add_movable_jump(mj)
+
+    for c in connections:
+        ssa.add_connection(seqpos_map[c[0]], seqpos_map[c[1]], c[2])
+
+    # Get the connections (loops) after assembly
+
+    connections_after_loop_building = ssa.connections_after_loop_building(pose)
+
     # Make docking filters
     
     sasas = []
     for mj in movable_jumps:
-        sasas.append(rosetta.protocols.rosetta_scripts.XmlObjects.static_get_filter('<Sasa name="sasa" threshold="600" jump="' + str(mj) + '" confidence="1"/>'))
+        sasas.append(rosetta.protocols.rosetta_scripts.XmlObjects.static_get_filter('<Sasa name="sasa" threshold="{0}" jump="{1}" confidence="1"/>'.format(
+            sasa_threshold, str(mj))))
    
     for sasa in sasas:
         ssa.add_docking_filter(sasa)
@@ -120,10 +139,6 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
     			<all exclude="CAFILMPVWY" />
     		</Cterm>
         </LayerDesign>
-        <OperateOnResidueSubset name="restrict_turns">
-            <Index resnums="28,29,38,39" />
-            <RestrictAbsentCanonicalAASRLT aas="GDN"/>
-        </OperateOnResidueSubset>
     </TASKOPERATIONS>
     <MOVERS>
         <FastDesign name="fastdes" task_operations="limitchi2,layer_all" clear_designable_residues="0" repeats="5" ramp_down_constraints="0" >
@@ -138,8 +153,8 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
 
     #rosetta.basic.options.set_path_option('lh:db_path', '/netapp/home/xingjiepan/Databases/loophash_db')
     loopsizes = rosetta.utility.vector1_int()
-    loopsizes.append(6)
-    loopsizes.append(8)
+    for c in connections_after_loop_building:
+        loopsizes.append(c.loop_length + 4)
     rosetta.basic.options.set_integer_vector_option('lh:loopsizes', loopsizes)
 
     xmlobj = rosetta.protocols.rosetta_scripts.XmlObjects.create_from_string(
@@ -155,14 +170,9 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
     			<all exclude="CAFILMPVWY" />
     		</Cterm>
         </LayerDesign>
-        <OperateOnResidueSubset name="restrict_turns">
-            <Index resnums="28,29,38,39" />
-            <RestrictAbsentCanonicalAASRLT aas="GDN"/>
-        </OperateOnResidueSubset>
-        <RestrictResiduesToRepacking name="loop_repack" residues="15,16,17,18,19,20,27,28,29,30,37,38,39,40" />
     </TASKOPERATIONS>
     <MOVERS>
-        <LoopModeler name="loop_modeler" task_operations="layer_all,loop_repack" config="loophash_kic" loophash_perturb_sequence="true" >
+        <LoopModeler name="loop_modeler" task_operations="layer_all" config="loophash_kic" loophash_perturb_sequence="true" >
             <Build skip="true"/>
             <Centroid skip="true"/>
         </LoopModeler>
@@ -171,9 +181,9 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
     )
     loop_modeler = xmlobj.get_mover('loop_modeler')
     loops = rosetta.protocols.loops.Loops()
-    loops.add_loop(15, 20)
-    loops.add_loop(27, 30)
-    loops.add_loop(37, 40)
+    
+    for c in connections_after_loop_building:
+        loops.add_loop(c.res1, c.res2)
     
     tf = loop_modeler.get_task_factory()
     restrict_to_loops = rosetta.protocols.toolbox.task_operations.RestrictToLoopsAndNeighbors()
@@ -186,20 +196,6 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info):
     loop_modeler.fullatom_stage().set_temp_cycles(50, False)
 
     ssa.set_loop_designer(loop_modeler)
-
-    ###DEBUG
-    #ssa.pass_dock_low_res(True)
-    #ssa.pass_dock_high_res(True)
-    #ssa.pass_build_loops(True)
-    #ssa.pass_fast_design(True)
-    #ssa.pass_design_loops(True)
-    ####DEBUG 
-
-    for mj in movable_jumps:
-        ssa.add_movable_jump(mj)
-
-    for c in connections:
-        ssa.add_connection(seqpos_map[c[0]], seqpos_map[c[1]], c[2])
 
     ssa.apply(pose)
 
@@ -279,7 +275,7 @@ def pilot_run(data_path, num_jobs, job_id):
 
     task_list = []
 
-    for i in range(1000):
+    for i in range(1):
         task_list.append({'pdb_files': [pdb_file1, pdb_file2],
                       'transformation_files': [transformation_file],
                       'transformation_residue_pairs':[(res1, res2)],
