@@ -22,7 +22,8 @@ def assemble_antiparallel_sheet_3_8_helix_15(data_path, num_jobs, job_id):
                    ((1, 'A', 15), (0,'C', 17), 4)]
 
     PPSD.assembly.run_batch_assembly(1, data_path, num_jobs, job_id, 
-            pdb_files, transformation_files, transformation_residue_pairs, movable_jumps, connections)
+            pdb_files, transformation_files, transformation_residue_pairs, 
+            movable_jumps, connections, sasa_threshold=600)
 
 def assemble_antiparallel_sheet_3_8_helix_20(data_path, num_jobs, job_id):
     pdb_files = ['data/antiparallel_sheets_3_8/2_2_30_30/sheet.pdb',
@@ -35,7 +36,8 @@ def assemble_antiparallel_sheet_3_8_helix_20(data_path, num_jobs, job_id):
                    ((1, 'A', 20), (0,'C', 17), 4)]
 
     PPSD.assembly.run_batch_assembly(1000, data_path, num_jobs, job_id, 
-            pdb_files, transformation_files, transformation_residue_pairs, movable_jumps, connections)
+            pdb_files, transformation_files, transformation_residue_pairs, 
+            movable_jumps, connections, sasa_threshold=600)
 
 
 if __name__ == '__main__':

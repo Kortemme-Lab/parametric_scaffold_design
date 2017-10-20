@@ -203,7 +203,7 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info, sasa_thres
 
     #pose.energies().show() ###DEBUG
 
-def assemble_from_files(pdb_files, transformation_files, transformation_residue_pairs, movable_jumps, connections, output_path):
+def assemble_from_files(pdb_files, transformation_files, transformation_residue_pairs, movable_jumps, connections, output_path, sasa_threshold=600):
     '''Assemble two secondary structures given the PDB files, transformation
     file, transformation residues, movable jumps and connections.
     The outputs will be saved to the output_path.
@@ -230,7 +230,7 @@ def assemble_from_files(pdb_files, transformation_files, transformation_residue_
 
     # Do the assembly
 
-    assemble(merged_pose, movable_jumps, connections, seqpos_map, task_info)
+    assemble(merged_pose, movable_jumps, connections, seqpos_map, task_info, sasa_threshold)
 
     merged_pose.dump_pdb(os.path.join(output_path, 'assembled.pdb'))
     PPSD.io.sequence_to_fasta_file(os.path.join(output_path, 'assembled.fasta'), 'assembled', merged_pose.sequence())
@@ -254,9 +254,10 @@ def run_tasks(task_list, num_jobs, job_id):
                 os.makedirs(t['output_path'])
 
             assemble_from_files(t['pdb_files'], t['transformation_files'], t['transformation_residue_pairs'],
-                    t['movable_jumps'], t['connections'], t['output_path'])
+                    t['movable_jumps'], t['connections'], t['output_path'], t['sasa_threshold'])
 
-def run_batch_assembly(num_structures, data_path, num_jobs, job_id, pdb_files, transformation_files, transformation_residue_pairs, movable_jumps, connections):
+def run_batch_assembly(num_structures, data_path, num_jobs, job_id, pdb_files, transformation_files, transformation_residue_pairs, 
+        movable_jumps, connections, sasa_threshold=600):
     '''Make a batch of assembly'''
     output_path = data_path
 
@@ -268,6 +269,7 @@ def run_batch_assembly(num_structures, data_path, num_jobs, job_id, pdb_files, t
                       'transformation_residue_pairs':transformation_residue_pairs,
                       'movable_jumps':movable_jumps,
                       'connections':connections,
+                      'sasa_threshold':sasa_threshold,
                       'output_path':os.path.join(output_path, str(i))})
     
     run_tasks(task_list, num_jobs, job_id)
