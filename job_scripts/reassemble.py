@@ -140,9 +140,12 @@ def pilot_run(data_path, num_jobs, job_id):
 
     for i in range(1000):
         task_list.append({'output_path' : os.path.join(data_path, str(i)),
-                          'input_pdb': 'data/test_assemble_3_8_loophashkic_noBBRelax/0/assembled.pdb',
-                          'good_fragments_file': 'data/test_assemble_3_8_loophashkic_noBBRelax/selected_fragments/fragments.json',
-                          'loops':[(15, 20), (27,30), (37,40)]})
+                          #'input_pdb': 'data/test_assemble_3_8_loophashkic_noBBRelax/0/assembled.pdb',
+                          #'good_fragments_file': 'data/test_assemble_3_8_loophashkic_noBBRelax/selected_fragments/fragments.json',
+                          #'loops':[(15, 20), (27,30), (37,40)]})
+                          'input_pdb': 'data/test_assemble_3_8_helix_20/0/assembled.pdb',
+                          'good_fragments_file': 'data/test_assemble_3_8_helix_20/selected_fragments/fragments.json',
+                          'loops':[(20, 25), (32,35), (42,45)]})
     
     run_tasks(task_list, num_jobs, job_id)
 
