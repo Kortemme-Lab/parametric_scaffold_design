@@ -108,7 +108,7 @@ def fasta_file_to_sequences(fasta_file):
                 while i < len(lines):
                     if lines[i].startswith('>'):
                         break
-                    sequences[-1] = ''.join([sequences[-1], line.strip()])
+                    sequences[-1] = ''.join([sequences[-1], lines[i].strip()])
                     i += 1
 
     return titles, sequences
