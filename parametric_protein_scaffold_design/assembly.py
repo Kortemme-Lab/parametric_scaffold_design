@@ -5,8 +5,8 @@ import datetime
 
 import pyrosetta
 import pyrosetta.rosetta as rosetta
-import parametric_protein_scaffold_design as PPSD
 
+import io
 from rosetta.protocols.assembly.secondary_structure_assembly import *
 
 
@@ -28,7 +28,7 @@ def save_residue_transformation(pdb_file, res1, res2, fout):
     seqpos2 = pose.pdb_info().pdb2pose(res2[0], res2[1])
 
     T = calc_residue_frame_transformation(pose, seqpos1, seqpos2)
-    PPSD.io.write_rigid_body_transformation_to_file(T, fout)
+    io.write_rigid_body_transformation_to_file(T, fout)
 
 def make_seqpos_map(poses):
     '''Make a map from the (structure_id, chain, pdb_number)
@@ -222,7 +222,7 @@ def assemble_from_files(pdb_files, transformation_files, transformation_residue_
 
     # Do the pre-assembly
 
-    Ts = [PPSD.io.load_rigid_body_transformation_from_file(tf) for tf in transformation_files]
+    Ts = [io.load_rigid_body_transformation_from_file(tf) for tf in transformation_files]
 
     pre_assemble(poses, transformation_residue_pairs, Ts)
   
@@ -233,7 +233,7 @@ def assemble_from_files(pdb_files, transformation_files, transformation_residue_
     assemble(merged_pose, movable_jumps, connections, seqpos_map, task_info, sasa_threshold)
 
     merged_pose.dump_pdb(os.path.join(output_path, 'assembled.pdb'))
-    PPSD.io.sequence_to_fasta_file(os.path.join(output_path, 'assembled.fasta'), 'assembled', merged_pose.sequence())
+    io.sequence_to_fasta_file(os.path.join(output_path, 'assembled.fasta'), 'assembled', merged_pose.sequence())
 
     end_time = datetime.datetime.now()
     run_time = end_time - start_time
@@ -244,7 +244,7 @@ def assemble_from_files(pdb_files, transformation_files, transformation_residue_
     task_info['score'] = merged_pose.energies().total_energy()
     task_info['run_time'] = run_time.total_seconds()
 
-    PPSD.io.save_task_info_file(output_path, task_info)
+    io.save_task_info_file(output_path, task_info)
 
 def run_tasks(task_list, num_jobs, job_id):
     '''Run tasks that belongs to the current job thread'''
