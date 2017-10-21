@@ -75,7 +75,7 @@ def evaluate_sheet_quality(sheet_path, sheet, num_strands, strand_length, skelet
     # Save the N-CA-C angle deviations into a TSV file 
     
     ll = [[i + 1, deviations_degree[i]] for i in range(len(deviations_degree))]
-    PPSD.io.ll_to_tsv(os.path.join(sheet_path, 'deviations_degree.tsv'), sorted(ll, key=lambda x : x[1]))
+    PPSD.IO.ll_to_tsv(os.path.join(sheet_path, 'deviations_degree.tsv'), sorted(ll, key=lambda x : x[1]))
 
     # Calculate the Ramachandran scores
     
@@ -84,7 +84,7 @@ def evaluate_sheet_quality(sheet_path, sheet, num_strands, strand_length, skelet
     # Save the Ramachandran scores into a TSV file 
     
     ll = [[i + 1, rama_scores[i]] for i in range(len(rama_scores))]
-    PPSD.io.ll_to_tsv(os.path.join(sheet_path, 'rama_scores.tsv'), sorted(ll, key=lambda x : x[1]))
+    PPSD.IO.ll_to_tsv(os.path.join(sheet_path, 'rama_scores.tsv'), sorted(ll, key=lambda x : x[1]))
 
     # Calculate distances of the nearest neighbors
     
@@ -93,7 +93,7 @@ def evaluate_sheet_quality(sheet_path, sheet, num_strands, strand_length, skelet
     # Save the distances of nearest neighbors into a TSV file 
     
     ll = [[i + 1, nearest_neighbor_distances[i]] for i in range(len(nearest_neighbor_distances))]
-    PPSD.io.ll_to_tsv(os.path.join(sheet_path, 'nearest_neighbor_distances.tsv'), sorted(ll, key=lambda x : x[1]))
+    PPSD.IO.ll_to_tsv(os.path.join(sheet_path, 'nearest_neighbor_distances.tsv'), sorted(ll, key=lambda x : x[1]))
     
     # Calculate energies of expected H-bonds
     
@@ -107,7 +107,7 @@ def evaluate_sheet_quality(sheet_path, sheet, num_strands, strand_length, skelet
     for i in range(1, len(sheet_hbonds) + 1):
         ll.append([int(sheet_hbonds[i].donor_res), int(sheet_hbonds[i].acceptor_res), hbond_scores[i]])
     
-    PPSD.io.ll_to_tsv(os.path.join(sheet_path, 'hbond_scores.tsv'), sorted(ll, key=lambda x : x[2]))
+    PPSD.IO.ll_to_tsv(os.path.join(sheet_path, 'hbond_scores.tsv'), sorted(ll, key=lambda x : x[2]))
 
 def read_sheet_info_into_a_dict(sheet_path):
     '''Read all information and evaluation about a sheet into a dictionary.'''
@@ -120,19 +120,19 @@ def read_sheet_info_into_a_dict(sheet_path):
 
     # Load the N-CA-C angle deviations 
     
-    info_dict['deviations_degree'] = PPSD.io.tsv_to_ll(os.path.join(sheet_path, 'deviations_degree.tsv'), [lambda x : int(x), lambda x : float(x)])
+    info_dict['deviations_degree'] = PPSD.IO.tsv_to_ll(os.path.join(sheet_path, 'deviations_degree.tsv'), [lambda x : int(x), lambda x : float(x)])
 
     # Load Ramachandran scores
     
-    info_dict['rama_scores'] = PPSD.io.tsv_to_ll(os.path.join(sheet_path, 'rama_scores.tsv'), [lambda x : int(x), lambda x : float(x)])
+    info_dict['rama_scores'] = PPSD.IO.tsv_to_ll(os.path.join(sheet_path, 'rama_scores.tsv'), [lambda x : int(x), lambda x : float(x)])
 
     # Load the nearest neighbor distances 
     
-    info_dict['nearest_neighbor_distances'] = PPSD.io.tsv_to_ll(os.path.join(sheet_path, 'nearest_neighbor_distances.tsv'), [lambda x : int(x), lambda x : float(x)])
+    info_dict['nearest_neighbor_distances'] = PPSD.IO.tsv_to_ll(os.path.join(sheet_path, 'nearest_neighbor_distances.tsv'), [lambda x : int(x), lambda x : float(x)])
 
     # Load the H-bond scores
     
-    info_dict['hbond_scores'] = PPSD.io.tsv_to_ll(os.path.join(sheet_path, 'hbond_scores.tsv'), [lambda x : int(x), lambda x : int(x), lambda x : float(x)])
+    info_dict['hbond_scores'] = PPSD.IO.tsv_to_ll(os.path.join(sheet_path, 'hbond_scores.tsv'), [lambda x : int(x), lambda x : int(x), lambda x : float(x)])
 
     return info_dict
 

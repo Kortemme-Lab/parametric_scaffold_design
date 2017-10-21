@@ -1,5 +1,4 @@
 import os
-import io
 import json
 from datetime import timedelta
 
@@ -90,6 +89,29 @@ def sequence_to_fasta_file(fasta_path, title, sequence):
             start += 80
             end = min(start + 80, len(sequence))
             f.write(sequence[start:end] + '\n')
+
+def fasta_file_to_sequences(fasta_file):
+    '''Read a list of sequences from the fasta file.
+    Return the titles and sequences'''
+    titles = []
+    sequences = []
+  
+    with open(fasta_file, 'r') as f:
+        lines = f.readlines()
+        i = 0
+        while i < len(lines):
+            if lines[i].startswith('>'):
+                titles.append(lines[i][1:])
+                sequences.append('')
+                i += 1
+
+                while i < len(lines):
+                    if lines[i].startswith('>'):
+                        break
+                    sequences[-1] = ''.join([sequences[-1], line.strip()])
+                    i += 1
+
+    return titles, sequences
 
 def save_task_info_file(output_path, task_info):
     '''Save the task information into a json file.'''

@@ -61,7 +61,7 @@ def refine_from_file(input_pdb, repack_positions, output_path):
     refine(pose, repack_positions)
 
     pose.dump_pdb(os.path.join(output_path, 'assembled.pdb'))
-    PPSD.io.sequence_to_fasta_file(os.path.join(output_path, 'assembled.fasta'), 'assembled', pose.sequence())
+    PPSD.IO.sequence_to_fasta_file(os.path.join(output_path, 'assembled.fasta'), 'assembled', pose.sequence())
     
     end_time = datetime.datetime.now()
     run_time = end_time - start_time
@@ -72,7 +72,7 @@ def refine_from_file(input_pdb, repack_positions, output_path):
     task_info['score'] = pose.energies().total_energy()
     task_info['run_time'] = run_time.total_seconds()
 
-    PPSD.io.save_task_info_file(output_path, task_info)
+    PPSD.IO.save_task_info_file(output_path, task_info)
 
 def run_tasks(task_list, num_jobs, job_id):
     '''Run tasks that belongs to the current job thread'''

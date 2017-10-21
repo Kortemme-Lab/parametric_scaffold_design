@@ -409,7 +409,7 @@ if __name__ == '__main__':
 
     filter_designs(data_path, num_jobs, job_id)
     
-    #plot_filter_scores(data_path, save_figures=True)
+    #plot_filter_scores(data_path, save_figures=False)
 
     #selected_designs = select_designs(data_path, 1000)
     #print [(d['id'], d['task_info']['score']) for d in selected_designs]
@@ -425,3 +425,4 @@ if __name__ == '__main__':
     #plot_sequence_identities(data_path)
 
     #extract_good_linker_fragments(data_path, 0.5, [(15,20), (27,30), (37,40)])
+    #extract_good_linker_fragments(data_path, 0.5, [(20,25), (32,35), (42,45)])
