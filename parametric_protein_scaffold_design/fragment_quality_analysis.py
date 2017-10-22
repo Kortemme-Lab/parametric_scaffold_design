@@ -97,6 +97,16 @@ class FragmentQualityAnalyzer:
 
         return fasta_file + '.phipsi'
 
+    def clean(self, fasta_file):
+        '''Clean all the temporary files that are no longer needed after fragment picking.'''
+        base = os.path.basename(fasta_file)[:-5]
+        files_to_clean = [base + ex for ex in
+                ['blast', 'check', 'checkpoint', 'fasta.phipsi', 'fasta.pssm',
+                 'horiz', 'pssm', 'ss', 'ss2']] + ['frags.200.9mers']
+
+        for f in files_to_clean:
+            if os.path.exists(f):
+                os.remove(f)
 
     def pick_fragments(self, input_pdb, input_fasta, working_dir):
         '''Pick fragments of a structure.
@@ -150,6 +160,9 @@ class FragmentQualityAnalyzer:
 
         subprocess.check_call(pick_cmd)
 
+        # Clean the temporary files
+
+        self.clean(input_fasta)
 
         # Go back to the previous working directory
     
