@@ -101,7 +101,7 @@ class FragmentQualityAnalyzer:
         '''Clean all the temporary files that are no longer needed after fragment picking.'''
         base = os.path.basename(fasta_file)[:-5]
         files_to_clean = [base + ex for ex in
-                ['blast', 'check', 'checkpoint', 'fasta.phipsi', 'fasta.pssm',
+                ['blast', 'check', 'checkpoint', 'fasta.phipsi', 'fasta.pssm', 'fasta.inp',
                  'horiz', 'pssm', 'ss', 'ss2']] + ['frags.200.9mers']
 
         for f in files_to_clean:
