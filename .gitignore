@@ -3,3 +3,4 @@ venv
 data
 parametric_protein_scaffold_design.egg-info
 dependencies/dependencies
+site_settings/site_settings.json
