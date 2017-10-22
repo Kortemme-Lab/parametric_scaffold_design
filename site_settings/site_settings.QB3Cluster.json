@@ -6,5 +6,6 @@
   "blastpgp" : "/netapp/home/klabqb3backrub/tools/blast-2.2.26/bin/blastpgp",
   "placeholder_seqs" : "/netapp/home/xingjiepan/Databases/BLAST/placeholder/placeholder_seqs",
   "sparksx_path" : "/netapp/home/klabqb3backrub/tools/sparks-x",
-  "rosetta_database" : "/netapp/home/rpac/Rosetta_57781/main/database"
+  "rosetta_database_fragment_picking" : "/netapp/home/rpac/Rosetta_57781/main/database",
+  "dalphaball" : "dependencies/dependencies/DAlpahBall/DAlphaBall.gcc"
 }

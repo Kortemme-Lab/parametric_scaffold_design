@@ -5,5 +5,7 @@
   "csblast" : "/home/xingjie/Softwares/BLAST/csblast/bin/csblast-2.2.3_linux64",
   "blastpgp" : "/home/xingjie/Softwares/BLAST/blast/blast-2.2.26/bin/blastpgp",
   "placeholder_seqs" : "/home/xingjie/DataBases/BLAST/placeholder/placeholder_seqs",
-  "sparksx_path" : ""
+  "sparksx_path" : "",
+  "rosetta_database_fragment_picking" : "/home/xingjie/Softwares/Rosetta/githubRepo/main/database",
+  "dalphaball" : "dependencies/dependencies/DAlpahBall/DAlphaBall.gcc"
 }

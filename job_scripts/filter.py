@@ -10,10 +10,9 @@ import pyrosetta.rosetta as rosetta
 import parametric_protein_scaffold_design as PPSD
 
 
-def ss_prediction_filter(pose, filter_dict):
+def ss_prediction_filter(pose, filter_dict, runpsipred_single):
     '''Filter by the secondary structure prediction.'''
-    
-    sspf = rosetta.protocols.rosetta_scripts.XmlObjects.static_get_filter('<SSPrediction name="sspred" use_svm="false" cmd="./dependencies/dependencies/psipred/runpsipred_single" use_probability="false" confidence="1" threshold="0.75"/>')
+    sspf = rosetta.protocols.rosetta_scripts.XmlObjects.static_get_filter('<SSPrediction name="sspred" use_svm="false" cmd="{0}" use_probability="false" confidence="1" threshold="0.75"/>'.format(runpsipred_single))
 
     filter_dict['SSPrediction']  = {'score' : sspf.report_sm(pose),
                                     'pass' : sspf.apply(pose)}
@@ -32,9 +31,9 @@ def pack_stat_filter(pose, filter_dict):
 
     return filter_dict['PackStat']['pass']
 
-def holes_filter(pose, filter_dict):
+def holes_filter(pose, filter_dict, dalphaball):
     '''Filter by the holes filter.'''
-    rosetta.basic.options.set_file_option('holes:dalphaball', './dependencies/dependencies/DAlpahBall/DAlphaBall.gcc')
+    rosetta.basic.options.set_file_option('holes:dalphaball', dalphaball)
 
     hf = rosetta.protocols.rosetta_scripts.XmlObjects.static_get_filter('<Holes name="holes" threshold="2.0" confidence="1"/>')
 
@@ -68,7 +67,7 @@ def fragment_analysis(design_path):
             site_settings['runpsipred_single'], site_settings['csblast'],
             site_settings['blastpgp'], site_settings['placeholder_seqs'], site_settings['sparksx_path'],
             site_settings['fragment_picker'], site_settings['vall'], 'database/fragment_quality_analysis/standard.wghts',
-            rosetta_database=site_settings['rosetta_database'])
+            rosetta_database=site_settings['rosetta_database_fragment_picking'])
 
     fdf = fqa.pick_fragments(
             os.path.join(design_path, 'assembled.pdb'), 
@@ -94,13 +93,24 @@ def filter_one_design(design_path):
     # Filter the design
 
     filter_dict = {}
-
-    filter_list = [ss_prediction_filter, pack_stat_filter, 
-            holes_filter, helix_shape_complementarity_filter,
+    
+    site_settings = PPSD.site_settings.load_site_settings()
+    runpsipred_single = os.path.abspath(site_settings['runpsipred_single'])
+    dalphaball = os.path.abspath(site_settings['dalphaball'])
+    
+    filter_list = [lambda p, d : ss_prediction_filter(p, d, runpsipred_single), 
+            pack_stat_filter, 
+            lambda p, d : holes_filter(p, d, dalphaball), 
+            helix_shape_complementarity_filter,
             buried_unsatisfied_hbond_filter]
+
+    cwd = os.getcwd()
+    os.chdir(design_path)
 
     for f in filter_list:
         f(pose, filter_dict)
+
+    os.chdir(cwd)
 
     # Do fragment analysis
 
