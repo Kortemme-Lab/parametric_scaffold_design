@@ -62,14 +62,13 @@ def fragment_analysis(design_path):
     '''Do fragment analysis on a design.
     Return the CRMSDs at each position.
     '''
+    site_settings = PPSD.site_settings.load_site_settings()
+
     fqa = PPSD.fragment_quality_analysis.FragmentQualityAnalyzer(
-            './dependencies/dependencies/psipred/runpsipred_single', 
-            #'fragment_picker.linuxclangrelease', 
-            '/netapp/home/rpac/Rosetta_57781/main/source/bin/fragment_picker.default.linuxgccrelease',
-            #'database/fragment_quality_analysis/small.vall.gz', 
-            '/netapp/home/klabqb3backrub/tools/fragment_generation/vall.jul19.2011',
-            'database/fragment_quality_analysis/simple.wghts',
-            rosetta_database='/netapp/home/rpac/Rosetta_57781/main/database')
+            site_settings['runpsipred_single'], site_settings['csblast'],
+            site_settings['blastpgp'], site_settings['placeholder_seqs'], site_settings['sparksx_path'],
+            site_settings['fragment_picker'], site_settings['vall'], 'database/fragment_quality_analysis/standard.wghts',
+            rosetta_database=site_settings['rosetta_database'])
 
     fdf = fqa.pick_fragments(
             os.path.join(design_path, 'assembled.pdb'), 
