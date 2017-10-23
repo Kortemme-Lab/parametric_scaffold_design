@@ -23,14 +23,17 @@ def make_sequence_logo(sequence_file, image_file, output_format='png_print'):
     
     subprocess.check_call(cmd)
 
-def filter_sequences_by_identity(sequences, threshold):
+def filter_sequences_by_identity(sequences, threshold, return_ids=False):
     '''Get a subset of given sequences in which no sequence identity is above a threshold.
     Sequences are readin one by one and if the identity between a new sequence and any sequence
     that is already saved in the new set is above the threshold, the new sequence will not be
     saved.
+    If return_ids is set to true, return the indices of the selected sequences in the
+    original list of sequences.
     '''
     non_redundant_sequences = []
-    for seq in sequences:
+    ids = []
+    for i, seq in enumerate(sequences):
         save = True
         for saved_seq in non_redundant_sequences:
             if simple_sequence_identity(seq, saved_seq) > threshold:
@@ -39,6 +42,10 @@ def filter_sequences_by_identity(sequences, threshold):
 
         if save:
             non_redundant_sequences.append(seq)
+            ids.append(i)
+
+    if return_ids:
+        return ids
 
     return non_redundant_sequences
 

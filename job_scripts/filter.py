@@ -315,6 +315,12 @@ def plot_sequence_identities(data_path):
 
     PPSD.sequence_analysis.plot_sequence_identities(sequences)
 
+def filter_designs_by_identity(design_list, threshold):
+    '''Select the designs that have sequence identities within the threshold'''
+    sequences = [d['task_info']['sequence'] for d in design_list]
+    selected_ids = PPSD.sequence_analysis.filter_sequences_by_identity(sequences, threshold, return_ids=True)
+    return [design_list[i] for i in selected_ids]
+
 def extract_good_linker_fragments(data_path, threshold, loops):
     '''Extract torsions and sequences of linker loops whose fragment
     qualities are below a threshold. Loops are defined by a pair of 
@@ -424,6 +430,8 @@ if __name__ == '__main__':
     #print [(d['id'], d['task_info']['score']) for d in selected_designs]
     #PPSD.sequence_analysis.plot_sequence_identities([d['task_info']['sequence'] for d in selected_designs])
     #make_sequence_logo(selected_designs, 'selected_designs')
+    #selected_designs_i60 = filter_designs_by_identity(selected_designs, 0.6)
+    #print [(d['id'], d['task_info']['score']) for d in selected_designs_i60]
 
     #plot_fragment_quality_each_position(data_path, savefig=False)
 
