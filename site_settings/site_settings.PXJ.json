@@ -7,5 +7,6 @@
   "placeholder_seqs" : "/home/xingjie/DataBases/BLAST/placeholder/placeholder_seqs",
   "sparksx_path" : "",
   "rosetta_database_fragment_picking" : "/home/xingjie/Softwares/Rosetta/githubRepo/main/database",
-  "dalphaball" : "dependencies/dependencies/DAlpahBall/DAlphaBall.gcc"
+  "dalphaball" : "dependencies/dependencies/DAlpahBall/DAlphaBall.gcc",
+  "loophash_database_path" : "/home/xingjie/DataBases/loophash_db"
 }

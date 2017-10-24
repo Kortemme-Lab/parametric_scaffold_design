@@ -7,6 +7,7 @@ import pyrosetta
 import pyrosetta.rosetta as rosetta
 
 import IO
+import site_settings
 from rosetta.protocols.assembly.secondary_structure_assembly import *
 
 
@@ -151,8 +152,10 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info, sasa_thres
     ssa.set_fast_design_mover(fast_design)
 
     # Make a customized loop design mover for DEBUG
+    
+    ss = site_settings.load_site_settings()
 
-    #rosetta.basic.options.set_path_option('lh:db_path', '/netapp/home/xingjiepan/Databases/loophash_db')
+    rosetta.basic.options.set_path_option('lh:db_path', ss['loophash_database_path'])
     loopsizes = rosetta.utility.vector1_int()
     for c in connections_after_loop_building:
         loopsizes.append(c.loop_length + 4)

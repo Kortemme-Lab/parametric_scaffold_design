@@ -7,5 +7,6 @@
   "placeholder_seqs" : "/netapp/home/xingjiepan/Databases/BLAST/placeholder/placeholder_seqs",
   "sparksx_path" : "/netapp/home/klabqb3backrub/tools/sparks-x",
   "rosetta_database_fragment_picking" : "/netapp/home/rpac/Rosetta_57781/main/database",
-  "dalphaball" : "dependencies/dependencies/DAlpahBall/DAlphaBall.gcc"
+  "dalphaball" : "dependencies/dependencies/DAlpahBall/DAlphaBall.gcc",
+  "loophash_database_path" : "/netapp/home/xingjiepan/Databases/loophash_db"
 }
