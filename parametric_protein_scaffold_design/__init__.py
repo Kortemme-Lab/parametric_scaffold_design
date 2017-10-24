@@ -10,4 +10,6 @@ from . import fragment_quality_analysis
 
 from . import sequence_analysis
 
+from . import pose_analysis
+
 from . import site_settings
