@@ -94,6 +94,8 @@ def assemble(pose, movable_jumps, connections, seqpos_map, task_info, sasa_thres
     
     ssa = SecondaryStructureAssembler()
 
+    ssa.set_docking_res_type('LEU')
+
     ###DEBUG
     #ssa.pass_dock_low_res(True)
     #ssa.pass_dock_high_res(True)
