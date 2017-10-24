@@ -359,8 +359,16 @@ def extract_good_linker_fragments(data_path, threshold, loops):
 
         pose = rosetta.core.pose.Pose()
         rosetta.core.import_pose.pose_from_file(pose, d['pdb_file'])
-        
+    
+        buhs1 = PPSD.pose_analysis.get_buried_unsatisfied_hbonds(pose)
+
         for i in loop_ids_to_store:
+            # Skip if there are buried unsatisfied Hbonds in the loop
+            num_buhs = 0
+            for seqpos in range(loops[i][0], loops[i][1] + 1):
+                num_buhs += buhs1[seqpos]
+            if num_buhs > 0: continue
+            
             sequence = []
             torsions = []
             
