@@ -365,6 +365,7 @@ def assemble(pose, unmovable_connections):
     tf.push_back(restrict_to_loops)
 
     loop_modeler.fullatom_stage().set_temp_cycles(50, False)
+    loop_modeler.set_loops(loops)
 
     loop_modeler.apply(pose)
 
