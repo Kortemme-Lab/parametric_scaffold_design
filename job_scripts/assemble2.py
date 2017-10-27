@@ -59,7 +59,8 @@ def pilot_run(data_path, num_jobs, job_id):
 
     for i in range(1000):
         task_list.append({'output_path' : os.path.join(data_path, str(i)),
-                          'preprotein_path': 'data/preproteins_3_8_helix_20',
+                          #'preprotein_path': 'data/preproteins_3_8_helix_20',
+                          'preprotein_path': 'data/preproteins_3_8_helix_20_new',
                           'loops':[(32,35), (42,45)]})
     
     run_tasks(task_list, num_jobs, job_id)
