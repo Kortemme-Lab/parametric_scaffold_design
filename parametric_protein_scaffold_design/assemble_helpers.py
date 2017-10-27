@@ -65,12 +65,18 @@ def pre_assemble(poses, res_pairs, frame_transformations):
     for i in range(len(seqpos_pairs)):
         transform_chain(poses[0], seqpos_pairs[i][0], seqpos_pairs[i][1], frame_transformations[i])
 
-def fast_loop_build(pose, loops):
-    '''Build loops quickly. Loops are given as pairs of (start, stop)'''
+def loops_to_rosetta_loops(loops):
+    '''Create a rosetta Loops object from a list of pairs (start, stop).'''
     loops_rosetta = rosetta.protocols.loops.Loops()
     for l in loops:
         loops_rosetta.add_loop(rosetta.protocols.loops.Loop(l[0], l[1], l[1], 0, True))
-    
+
+    return loops_rosetta
+
+def fast_loop_build(pose, loops):
+    '''Build loops quickly. Loops are given as pairs of (start, stop)'''
+    loops_rosetta = loops_to_rosetta_loops(loops)
+
     loop_modeler = rosetta.protocols.loop_modeler.LoopModeler()
     loop_modeler.set_loops(loops_rosetta)
     loop_modeler.setup_kic_config()

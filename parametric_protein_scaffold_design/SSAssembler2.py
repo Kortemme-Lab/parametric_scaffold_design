@@ -266,7 +266,7 @@ def pilot_make_preproteins():
     ref_helix_cas = [xyz_to_np_array(pose.residue(i).xyz("CA")) for i in range(1, 20)]
     
     assemble_helpers.fast_loop_build(pose, [(32, 35), (42, 45)])
-    pose.dump_pdb('debug/test.pdb')###DEBUG
+    #pose.dump_pdb('debug/test.pdb')###DEBUG
     
     ft = rosetta.core.kinematics.FoldTree()
     ft.add_edge(pose.size(), 1, -1)
@@ -287,6 +287,86 @@ def pilot_make_preproteins():
     print run_time.total_seconds()
 
 
+def assemble(pose, unmovable_connections):
+    '''Assembe the structure given the pose and unmovable connections.
+    Note that the movable connection should be sampled in the preprotein
+    generating step.
+    '''
+    # Do fast design
+    
+    xmlobj = rosetta.protocols.rosetta_scripts.XmlObjects.create_from_string(
+    '''
+    <TASKOPERATIONS>
+        <LimitAromaChi2 name="limitchi2" include_trp="1" />
+        <ExtraRotamersGeneric name="ex12" ex1="true" ex2="true" />
+        <LayerDesign name="layer_all" layer="core_boundary_surface_Nterm_Cterm" use_sidechain_neighbors="True" pore_radius="2.0" verbose="true" core="3.5" surface="0.95" >
+    		<Nterm>
+    			<all append="DEGHKNQRST" />
+    			<all exclude="CAFILMPVWY" />
+    		</Nterm>
+    		<Cterm>
+    			<all append="DEGHKNQRST" />
+    			<all exclude="CAFILMPVWY" />
+    		</Cterm>
+        </LayerDesign>
+    </TASKOPERATIONS>
+    <MOVERS>
+        <FastDesign name="fastdes" task_operations="limitchi2,ex12,layer_all" clear_designable_residues="1" repeats="5" ramp_down_constraints="0"/>
+    </MOVERS>
+    ''')
+    fast_design = xmlobj.get_mover('fastdes')
+
+    fast_design.apply(pose)
+
+    # Do loop design for the unmovable loops
+    
+    ss = site_settings.load_site_settings()
+
+    rosetta.basic.options.set_path_option('lh:db_path', ss['loophash_database_path'])
+    loopsizes = rosetta.utility.vector1_int()
+    for c in connections_after_loop_building:
+        loopsizes.append(c.loop_length + 4)
+    rosetta.basic.options.set_integer_vector_option('lh:loopsizes', loopsizes)
+
+    xmlobj = rosetta.protocols.rosetta_scripts.XmlObjects.create_from_string(
+    '''
+    <TASKOPERATIONS>
+        <LayerDesign name="layer_all" layer="core_boundary_surface_Nterm_Cterm" use_sidechain_neighbors="True" pore_radius="2.0" verbose="true" core="3.5" surface="0.95" >
+    		<Nterm>
+    			<all append="DEGHKNQRST" />
+    			<all exclude="CAFILMPVWY" />
+    		</Nterm>
+    		<Cterm>
+    			<all append="DEGHKNQRST" />
+    			<all exclude="CAFILMPVWY" />
+    		</Cterm>
+        </LayerDesign>
+    </TASKOPERATIONS>
+    <MOVERS>
+        <LoopModeler name="loop_modeler" task_operations="layer_all" config="loophash_kic" loophash_perturb_sequence="true" >
+            <Build skip="true"/>
+            <Centroid skip="true"/>
+        </LoopModeler>
+    </MOVERS>
+    '''
+    )
+    loop_modeler = xmlobj.get_mover('loop_modeler')
+    loops = rosetta.protocols.loops.Loops()
+    
+    for c in unmovable_connections:
+        loops.add_loop(c[0], c[1])
+    
+    tf = loop_modeler.get_task_factory()
+    restrict_to_loops = rosetta.protocols.toolbox.task_operations.RestrictToLoopsAndNeighbors()
+    restrict_to_loops.set_include_neighbors(True)
+    restrict_to_loops.set_cutoff_distance(6)
+    restrict_to_loops.set_design_neighbors(True)
+    restrict_to_loops.set_loops(loops)
+    tf.push_back(restrict_to_loops)
+
+    loop_modeler.fullatom_stage().set_temp_cycles(50, False)
+
+    loop_modeler.apply(pose)
 
 if __name__ == '__main__':
     pyrosetta.init()
