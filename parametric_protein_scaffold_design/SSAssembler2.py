@@ -41,6 +41,30 @@ def extract_fragment(lh_library, loop_size, frag_index):
 
     return backbone_seg, loop_sequence
 
+def get_linkers_from_loophash_db(lh_library, loop_size):
+    '''Get the linker fragments from the loop hash database.'''
+    linkers = []
+    
+    # Get the indices of fragments
+
+    hashmap = lh_library.gethash(loop_size)
+    
+    leap_index_bucket = rosetta.std.vector_unsigned_long()
+    for i in range(1000):
+    #for i in range(hashmap.n_loops()):
+        leap_index_bucket.append(i)
+
+    # Insert the fragments
+
+    for leap_index in leap_index_bucket:
+        bb_seg, sequence = extract_fragment(lh_library, loop_size, leap_index)
+
+        linkers.append({'phis': bb_seg.phi(),
+                        'psis': bb_seg.psi(),
+                        'omegas' : bb_seg.omega()})
+    
+    return linkers
+
 def generate_preproteins(pose, loop, lh_library, ref_seqposes, ref_ca_coords):
     '''Generate preprotein structures given a loop defined as the pair (start, stop).
     The torsions of start and stop will not be changed
@@ -60,30 +84,16 @@ def generate_preproteins(pose, loop, lh_library, ref_seqposes, ref_ca_coords):
 
     chain1 = list(range(1, loop[0] + 1))
     chain2 = [i for i in range(loop[1], pose.size() + 1) if not pose.residue(i).is_virtual_residue()]
-
-    # Get the indices of fragments
-
-    loop_size = loop[1] - loop[0] - 1
-    hashmap = lh_library.gethash(loop_size)
     
-    leap_index_bucket = rosetta.std.vector_unsigned_long()
-    #for i in range(10000):
-    for i in range(hashmap.n_loops()):
-        leap_index_bucket.append(i)
+    loop_size = loop[1] - loop[0] - 1
 
-    # Insert the fragments
+    linkers = get_linkers_from_loophash_db(lh_library, loop_size)
 
-    for leap_index in leap_index_bucket:
-        bb_seg, sequence = extract_fragment(lh_library, loop_size, leap_index)
-
-        phis = bb_seg.phi()
-        psis = bb_seg.psi()
-        omegas = bb_seg.omega()
-
-        for j in range(len(phis)):
-                pose.set_phi(loop[0] + j + 1, phis[j])
-                pose.set_psi(loop[0] + j + 1, psis[j])
-                pose.set_omega(loop[0] + j + 1, omegas[j])
+    for index, linker in enumerate(linkers):
+        for j in range(loop_size):
+                pose.set_phi(loop[0] + j + 1, linker['phis'][j])
+                pose.set_psi(loop[0] + j + 1, linker['psis'][j])
+                pose.set_omega(loop[0] + j + 1, linker['omegas'][j])
 
         ca_coords = [xyz_to_np_array(pose.residue(i).xyz("CA")) for i in ref_seqposes]
         rmsd = geometry.RMSD(ca_coords, ref_ca_coords)
@@ -103,11 +113,12 @@ def generate_preproteins(pose, loop, lh_library, ref_seqposes, ref_ca_coords):
         if np.mean(inter_chain_distance1) < 9 or np.mean(inter_chain_distance1) > 13 or max(inter_chain_distance1) > 18: continue
         if np.mean(inter_chain_distance2) < 9 or np.mean(inter_chain_distance2) > 13 or max(inter_chain_distance2) > 18: continue
 
-        print leap_index, rmsd, np.mean(inter_chain_distance1), np.mean(inter_chain_distance2), max(inter_chain_distance1), max(inter_chain_distance2)
+        print index, rmsd, np.mean(inter_chain_distance1), np.mean(inter_chain_distance2), max(inter_chain_distance1), max(inter_chain_distance2)
         
         for i in [33, 34, 43, 44]: ###DEBUG
             pose.virtual_to_real(i)
-        pose.dump_pdb('data/preproteins_3_8_helix_20/preprotein_{0}.pdb'.format(leap_index)) #DEBUG
+        pose.dump_pdb('debug/test{0}.pdb'.format(index)) #DEBUG
+        #pose.dump_pdb('data/preproteins_3_8_helix_20/preprotein_{0}.pdb'.format(index)) #DEBUG
         for i in [33, 34, 43, 44]: ###DEBUG
             pose.real_to_virtual(i)
 
