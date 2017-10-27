@@ -363,6 +363,8 @@ def extract_good_linker_fragments(data_path, threshold, loops):
         buhs1 = PPSD.pose_analysis.get_buried_unsatisfied_hbonds(pose)
 
         for i in loop_ids_to_store:
+            if i == 0 : print(d['id']) ###DEBUG
+            
             # Skip if there are buried unsatisfied Hbonds in the loop
             num_buhs = 0
             for seqpos in range(loops[i][0], loops[i][1] + 1):

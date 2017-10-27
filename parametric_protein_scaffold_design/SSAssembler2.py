@@ -324,8 +324,8 @@ def assemble(pose, unmovable_connections):
 
     rosetta.basic.options.set_path_option('lh:db_path', ss['loophash_database_path'])
     loopsizes = rosetta.utility.vector1_int()
-    for c in connections_after_loop_building:
-        loopsizes.append(c.loop_length + 4)
+    for c in unmovable_connections:
+        loopsizes.append(c[1] - c[0] + 3)
     rosetta.basic.options.set_integer_vector_option('lh:loopsizes', loopsizes)
 
     xmlobj = rosetta.protocols.rosetta_scripts.XmlObjects.create_from_string(
