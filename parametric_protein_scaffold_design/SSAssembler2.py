@@ -351,10 +351,7 @@ def assemble(pose, unmovable_connections):
     '''
     )
     loop_modeler = xmlobj.get_mover('loop_modeler')
-    loops = rosetta.protocols.loops.Loops()
-    
-    for c in unmovable_connections:
-        loops.add_loop(c[0], c[1])
+    loops = assemble_helpers.loops_to_rosetta_loops(unmovable_connections)
     
     tf = loop_modeler.get_task_factory()
     restrict_to_loops = rosetta.protocols.toolbox.task_operations.RestrictToLoopsAndNeighbors()
