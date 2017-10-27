@@ -1,3 +1,5 @@
+import pyrosetta
+from pyrosetta import rosetta
 from rosetta.protocols.assembly.secondary_structure_assembly import *
 
 
@@ -62,4 +64,19 @@ def pre_assemble(poses, res_pairs, frame_transformations):
 
     for i in range(len(seqpos_pairs)):
         transform_chain(poses[0], seqpos_pairs[i][0], seqpos_pairs[i][1], frame_transformations[i])
+
+def fast_loop_build(pose, loops):
+    '''Build loops quickly. Loops are given as pairs of (start, stop)'''
+    loops_rosetta = rosetta.protocols.loops.Loops()
+    for l in loops:
+        loops_rosetta.add_loop(rosetta.protocols.loops.Loop(l[0], l[1], l[1], 0, True))
+    
+    loop_modeler = rosetta.protocols.loop_modeler.LoopModeler()
+    loop_modeler.set_loops(loops_rosetta)
+    loop_modeler.setup_kic_config()
+    loop_modeler.fullatom_stage().mark_as_test_run()
+    loop_modeler.centroid_stage().mark_as_test_run()
+
+    loop_modeler.apply(pose)
+    return loop_modeler.build_stage().was_successful()
 
