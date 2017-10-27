@@ -1,4 +1,5 @@
 import datetime
+import json
 
 import numpy as np
 
@@ -87,7 +88,11 @@ def generate_preproteins(pose, loop, lh_library, ref_seqposes, ref_ca_coords):
     
     loop_size = loop[1] - loop[0] - 1
 
-    linkers = get_linkers_from_loophash_db(lh_library, loop_size)
+    #linkers = get_linkers_from_loophash_db(lh_library, loop_size)
+    with open('debug/linker_helix_sheet_4.json', 'r') as f:
+        linkers = json.load(f)
+    loop = (loop[0] - 1, loop[1] + 1)
+    loop_size = loop[1] - loop[0] - 1
 
     for index, linker in enumerate(linkers):
         for j in range(loop_size):
@@ -114,13 +119,18 @@ def generate_preproteins(pose, loop, lh_library, ref_seqposes, ref_ca_coords):
         if np.mean(inter_chain_distance2) < 9 or np.mean(inter_chain_distance2) > 13 or max(inter_chain_distance2) > 18: continue
 
         print index, rmsd, np.mean(inter_chain_distance1), np.mean(inter_chain_distance2), max(inter_chain_distance1), max(inter_chain_distance2)
-        
+    
+        assemble_helpers.mutate_residues(pose, list(range(loop[0] + 1, loop[1])), linker['sequence'])
+
         for i in [33, 34, 43, 44]: ###DEBUG
             pose.virtual_to_real(i)
-        pose.dump_pdb('debug/test{0}.pdb'.format(index)) #DEBUG
-        #pose.dump_pdb('data/preproteins_3_8_helix_20/preprotein_{0}.pdb'.format(index)) #DEBUG
+        #pose.dump_pdb('debug/test{0}.pdb'.format(index)) #DEBUG
+        pose.dump_pdb('data/preproteins_3_8_helix_20_new/preprotein_{0}.pdb'.format(index)) #DEBUG
         for i in [33, 34, 43, 44]: ###DEBUG
             pose.real_to_virtual(i)
+        
+        assemble_helpers.mutate_residues(pose, list(range(loop[0] + 1, loop[1])), ['ALA'] * loop_size)
+        
 
 def append_alanines(pose, num):
     '''Append num alanines to the end of a pose'''
@@ -322,7 +332,7 @@ def assemble(pose, unmovable_connections):
         </LayerDesign>
     </TASKOPERATIONS>
     <MOVERS>
-        <FastDesign name="fastdes" task_operations="limitchi2,ex12,layer_all" clear_designable_residues="1" repeats="5" ramp_down_constraints="0"/>
+        <FastDesign name="fastdes" task_operations="limitchi2,ex12,layer_all" clear_designable_residues="0" repeats="5" ramp_down_constraints="0"/>
     </MOVERS>
     ''')
     fast_design = xmlobj.get_mover('fastdes')

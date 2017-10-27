@@ -86,3 +86,19 @@ def fast_loop_build(pose, loops):
     loop_modeler.apply(pose)
     return loop_modeler.build_stage().was_successful()
 
+def mutate_residues(pose, res_list, aa_list):
+    '''Mutate a list of residues. The list of AAs could
+    either be 1 letter code or 3 letter code.
+    '''
+    aa_name_map = {'A':'ALA', 'P':'PRO', 'V':'VAL', 'L':'LEU', 'I':'ILE', 'M':'MET',
+                   'F':'PHE', 'Y':'TYR', 'W':'TRP', 'S':'SER', 'T':'THR', 'C':'CYS',
+                   'K':'LYS', 'R':'ARG', 'H':'HIS', 'D':'ASP', 'E':'GLU', 'N':'ASN',
+                   'Q':'GLN', 'G':'GLY'}
+
+
+    mutater = rosetta.protocols.simple_moves.MutateResidue()
+    for i in range(len(res_list)):
+        name = aa_list[i] if len(aa_list[i]) == 3 else aa_name_map[aa_list[i]]
+        mutater.set_res_name(name)
+        mutater.set_target(res_list[i])
+        mutater.apply(pose)
