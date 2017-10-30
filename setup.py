@@ -17,7 +17,8 @@ setup(
         'docopt',
     ],
     extras_require = {
-        'weblogo':  ['weblogo']
+        'weblogo':  ['weblogo'],
+        'cylinder_fitting': ['cylinder_fitting']
     },
     entry_points={
         'console_scripts': [
