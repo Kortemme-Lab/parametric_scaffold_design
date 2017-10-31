@@ -1,3 +1,4 @@
+import os
 import datetime
 import json
 
@@ -17,9 +18,9 @@ def xyz_to_np_array(xyz):
     '''Convert an xyz vector to a numpy array.'''
     return np.array([xyz.x, xyz.y, xyz.z])
 
-def generate_preproteins(pose, loop, ref_seqposes, ref_ca_coords):
+def generate_preproteins(pose, loop, ref_seqposes, ref_ca_coords, virtual_residues, linker_database, output_path):
     '''Generate preprotein structures given a loop defined as the pair (start, stop).
-    The torsions of start and stop will not be changed
+    The torsions of start and stop will also be changed
     '''
     # Mutate the pose to all ALA
    
@@ -28,27 +29,26 @@ def generate_preproteins(pose, loop, ref_seqposes, ref_ca_coords):
     for i in range(1, pose.size() + 1):
         mutater.set_target(i)
         mutater.apply(pose)
-    
-    for i in [33, 34, 43, 44]: ###DEBUG
+   
+    # Virtualize some residues such that they will not be used for filtering
+
+    for i in virtual_residues: 
         pose.real_to_virtual(i)
     
     # Get residues in the two chains
 
-    chain1 = list(range(1, loop[0] + 1))
+    chain1 = [i for i in range(1, loop[0] + 1) if not pose.residue(i).is_virtual_residue()]
     chain2 = [i for i in range(loop[1], pose.size() + 1) if not pose.residue(i).is_virtual_residue()]
     
-    loop_size = loop[1] - loop[0] - 1
-
-    with open('debug/linker_helix_sheet_4.json', 'r') as f:
+    with open(linker_database, 'r') as f:
         linkers = json.load(f)
-    loop = (loop[0] - 1, loop[1] + 1)
-    loop_size = loop[1] - loop[0] - 1
+    loop_size = loop[1] - loop[0] + 1
 
     for index, linker in enumerate(linkers):
         for j in range(loop_size):
-                pose.set_phi(loop[0] + j + 1, linker['phis'][j])
-                pose.set_psi(loop[0] + j + 1, linker['psis'][j])
-                pose.set_omega(loop[0] + j + 1, linker['omegas'][j])
+                pose.set_phi(loop[0] + j, linker['phis'][j])
+                pose.set_psi(loop[0] + j, linker['psis'][j])
+                pose.set_omega(loop[0] + j, linker['omegas'][j])
 
         ca_coords = [xyz_to_np_array(pose.residue(i).xyz("CA")) for i in ref_seqposes]
         rmsd = geometry.RMSD(ca_coords, ref_ca_coords)
@@ -58,7 +58,7 @@ def generate_preproteins(pose, loop, ref_seqposes, ref_ca_coords):
         if rmsd > 10: continue
             
         buhs = pose_analysis.get_buried_unsatisfied_hbonds(pose)
-        if sum(buhs[i] for i in range(loop[0] - 1, loop[1] + 2)) > 0 : continue
+        if sum(buhs[i] for i in range(loop[0], loop[1] + 1)) > 0 : continue
         
         if not pose_analysis.check_clashes(pose): continue
 
@@ -70,16 +70,15 @@ def generate_preproteins(pose, loop, ref_seqposes, ref_ca_coords):
 
         print index, rmsd, np.mean(inter_chain_distance1), np.mean(inter_chain_distance2), max(inter_chain_distance1), max(inter_chain_distance2)
     
-        assemble_helpers.mutate_residues(pose, list(range(loop[0] + 1, loop[1])), linker['sequence'])
+        assemble_helpers.mutate_residues(pose, list(range(loop[0], loop[1] + 1)), linker['sequence'])
 
-        for i in [33, 34, 43, 44]: ###DEBUG
+        for i in virtual_residues:
             pose.virtual_to_real(i)
-        #pose.dump_pdb('debug/test{0}.pdb'.format(index)) #DEBUG
-        pose.dump_pdb('data/preproteins_3_8_helix_20_new/preprotein_{0}.pdb'.format(index)) #DEBUG
-        for i in [33, 34, 43, 44]: ###DEBUG
+        pose.dump_pdb(os.path.join(output_path, 'preprotein_{0}.pdb'.format(index)))
+        for i in virtual_residues:
             pose.real_to_virtual(i)
         
-        assemble_helpers.mutate_residues(pose, list(range(loop[0] + 1, loop[1])), ['ALA'] * loop_size)
+        assemble_helpers.mutate_residues(pose, list(range(loop[0], loop[1] + 1)), ['ALA'] * loop_size)
         
 
 def append_alanines(pose, num):
@@ -243,7 +242,7 @@ def pilot_make_preproteins():
 
     start_time = datetime.datetime.now()
    
-    generate_preproteins(pose, (loop_start, loop_stop),  list(range(1, 20)), ref_helix_cas)
+    generate_preproteins(pose, (loop_start, loop_stop),  list(range(1, 20)), ref_helix_cas, [33, 34, 43, 44], 'debug/linker_helix_sheet_4.json', 'debug')
 
     end_time = datetime.datetime.now()
     run_time = end_time - start_time
