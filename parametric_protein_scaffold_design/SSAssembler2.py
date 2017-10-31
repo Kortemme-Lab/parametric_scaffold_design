@@ -188,13 +188,15 @@ def add_linkers(pose, connections, seqpos_map):
     new_pose.pdb_info(rosetta.core.pose.PDBInfo(new_pose.size()))
     new_pose.conformation().reset_chain_endings();
 
-    return new_pose
+    return new_pose, connections_after_adding_linkers
 
-def connect_chains(pdb_files, transformation_files, transformation_residue_pairs, movable_jumps, connections):
+def connect_chains(pdb_files, transformation_files, transformation_residue_pairs, connections):
     '''Connect the structures in given pdb files. The relative orientations between chains
     are defined by the transformation_files and transformation_residue_pairs. Connection 
     loops will be built to connect the chains. Notice that the loops will not be closed by
     this function.
+
+    Return the merged pose and connections after adding loops.
     '''
     poses = []
     for pdb_file in pdb_files:
@@ -211,42 +213,61 @@ def connect_chains(pdb_files, transformation_files, transformation_residue_pairs
   
     merged_pose = poses[0]
 
-    merged_pose = add_linkers(merged_pose, connections, seqpos_map)
-
-    return merged_pose
-
+    return add_linkers(merged_pose, connections, seqpos_map)
 
 def pilot_make_preproteins():
-    pdb_files = ['data/antiparallel_sheets_3_8/2_2_30_30/sheet.pdb',
+    pdb_files = [
+                #'data/antiparallel_sheets_3_8/2_2_30_30/sheet.pdb',
+                'data/antiparallel_sheets_3_8/0_0_10_10/sheet.pdb',
+                #'data/antiparallel_sheets_3_8/4_4_50_50/sheet.pdb',
                  'data/straight_helices/20/helix.pdb']
     transformation_files = ['database/transformations/sheet_helix_transformation.json']
     transformation_residue_pairs = [((0, 'B', 13), (1, 'A', 13))]
-    movable_jumps = [3] 
+    movable_connections = [2] 
     connections = [((0, 'B', 16), (0, 'A', 1), 2),
                    ((0, 'C', 24), (0,'B', 9), 2),
                    ((1, 'A', 20), (0,'C', 17), 4)]
+    root_after_movable_connection = True
+    root_residue = 1
 
+    pose, connections_after_adding_linkers = connect_chains(pdb_files, transformation_files, 
+            transformation_residue_pairs, connections)
     
-    pose = connect_chains(pdb_files, transformation_files, transformation_residue_pairs, movable_jumps, connections)
-    pose.dump_pdb('debug/test.pdb')###DEBUG
-    exit()
+    unmovable_connections = [connections_after_adding_linkers[i] for i in range(len(connections)) if not i in movable_connections]
+    assemble_helpers.fast_loop_build(pose, unmovable_connections)
+    
     ref_helix_cas = [xyz_to_np_array(pose.residue(i).xyz("CA")) for i in range(1, 20)]
-    
-    assemble_helpers.fast_loop_build(pose, [(32, 35), (42, 45)])
-    
+
+    # Set the root of the fold tree
+
+    if root_after_movable_connection:
+        root_residue = connections_after_adding_linkers[movable_connections[0]][1] + 1
+    else:
+        root_residue = connections_after_adding_linkers[movable_connections[0]][0] - 1
+
     ft = rosetta.core.kinematics.FoldTree()
-    ft.add_edge(pose.size(), 1, -1)
+    
+    if root_residue > 1:
+        ft.add_edge(root_residue, 1, -1)
+    if root_residue < pose.size():
+        ft.add_edge(root_residue, pose.size(), -1)
     pose.fold_tree(ft)
     
-    rosetta.core.conformation.idealize_position(24, pose.conformation())
-   
+    rosetta.core.conformation.idealize_position(
+            connections_after_adding_linkers[movable_connections[0]][1] - 1, pose.conformation())
+    
+    #pose.dump_pdb('debug/test.pdb')###DEBUG
+    #exit()
 
     loop_start = 20
     loop_stop = loop_start + 5
 
     start_time = datetime.datetime.now()
    
-    generate_preproteins(pose, (loop_start, loop_stop),  list(range(1, 20)), ref_helix_cas, [33, 34, 43, 44], 'debug/linker_helix_sheet_4.json', 'debug')
+    generate_preproteins(pose, (loop_start, loop_stop),  list(range(1, 20)), ref_helix_cas, [33, 34, 43, 44], 'debug/linker_helix_sheet_4.json', 
+            #'debug')
+            'data/preprotein_3_8_10_10_helix_20')
+            #'data/preprotein_3_8_50_50_helix_20')
 
     end_time = datetime.datetime.now()
     run_time = end_time - start_time
