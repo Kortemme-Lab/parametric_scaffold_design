@@ -190,16 +190,12 @@ def add_linkers(pose, connections, seqpos_map):
 
     return new_pose
 
-def pilot_connect_chains():
-    pdb_files = ['data/antiparallel_sheets_3_8/2_2_30_30/sheet.pdb',
-                 'data/straight_helices/20/helix.pdb']
-    transformation_files = ['database/transformations/sheet_helix_transformation.json']
-    transformation_residue_pairs = [((0, 'B', 13), (1, 'A', 13))]
-    movable_jumps = [3] 
-    connections = [((0, 'B', 16), (0, 'A', 1), 2),
-                   ((0, 'C', 24), (0,'B', 9), 2),
-                   ((1, 'A', 20), (0,'C', 17), 4)]
-
+def connect_chains(pdb_files, transformation_files, transformation_residue_pairs, movable_jumps, connections):
+    '''Connect the structures in given pdb files. The relative orientations between chains
+    are defined by the transformation_files and transformation_residue_pairs. Connection 
+    loops will be built to connect the chains. Notice that the loops will not be closed by
+    this function.
+    '''
     poses = []
     for pdb_file in pdb_files:
         poses.append( rosetta.core.pose.Pose() )
@@ -221,14 +217,22 @@ def pilot_connect_chains():
 
 
 def pilot_make_preproteins():
-    #pose = rosetta.core.pose.Pose()
-    #rosetta.core.import_pose.pose_from_file(pose, 'data/reassemble_test_assemble_3_8_helix_20/0/assembled.pdb')
+    pdb_files = ['data/antiparallel_sheets_3_8/2_2_30_30/sheet.pdb',
+                 'data/straight_helices/20/helix.pdb']
+    transformation_files = ['database/transformations/sheet_helix_transformation.json']
+    transformation_residue_pairs = [((0, 'B', 13), (1, 'A', 13))]
+    movable_jumps = [3] 
+    connections = [((0, 'B', 16), (0, 'A', 1), 2),
+                   ((0, 'C', 24), (0,'B', 9), 2),
+                   ((1, 'A', 20), (0,'C', 17), 4)]
+
     
-    pose = pilot_connect_chains()
+    pose = connect_chains(pdb_files, transformation_files, transformation_residue_pairs, movable_jumps, connections)
+    pose.dump_pdb('debug/test.pdb')###DEBUG
+    exit()
     ref_helix_cas = [xyz_to_np_array(pose.residue(i).xyz("CA")) for i in range(1, 20)]
     
     assemble_helpers.fast_loop_build(pose, [(32, 35), (42, 45)])
-    #pose.dump_pdb('debug/test.pdb')###DEBUG
     
     ft = rosetta.core.kinematics.FoldTree()
     ft.add_edge(pose.size(), 1, -1)
