@@ -12,15 +12,15 @@ import geometry
 import pose_analysis
 import assemble_helpers
 import IO
+import loop_grafting
 
 
 def xyz_to_np_array(xyz):
     '''Convert an xyz vector to a numpy array.'''
     return np.array([xyz.x, xyz.y, xyz.z])
 
-def generate_preproteins(pose, loop, ref_seqposes, ref_ca_coords, virtual_residues, linker_database, output_path):
-    '''Generate preprotein structures given a loop defined as the pair (start, stop).
-    The torsions of start and stop will also be changed
+def generate_movable_linkers(pose, loop, ref_seqposes, ref_ca_coords, virtual_residues, linker_database, output_path):
+    '''Generate movable linkers given a loop defined as the pair (start, stop).
     '''
     # Mutate the pose to all ALA
    
@@ -37,12 +37,17 @@ def generate_preproteins(pose, loop, ref_seqposes, ref_ca_coords, virtual_residu
     
     # Get residues in the two chains
 
-    chain1 = [i for i in range(1, loop[0] + 1) if not pose.residue(i).is_virtual_residue()]
-    chain2 = [i for i in range(loop[1], pose.size() + 1) if not pose.residue(i).is_virtual_residue()]
-    
+    #chain1 = [i for i in range(1, loop[0] + 1) if not pose.residue(i).is_virtual_residue()]
+    #chain2 = [i for i in range(loop[1], pose.size() + 1) if not pose.residue(i).is_virtual_residue()]
+   
+    chain1 = list(range(1, 9)) + list(range(37, 45)) + list(range(47, 55))
+    chain2 = list(range(13, 33))
+
     with open(linker_database, 'r') as f:
         linkers = json.load(f)
     loop_size = loop[1] - loop[0] + 1
+
+    selected_linkers = []
 
     for index, linker in enumerate(linkers):
         for j in range(loop_size):
@@ -56,7 +61,7 @@ def generate_preproteins(pose, loop, ref_seqposes, ref_ca_coords, virtual_residu
         # Filter the results
         
         if rmsd > 10: continue
-            
+        
         buhs = pose_analysis.get_buried_unsatisfied_hbonds(pose)
         if sum(buhs[i] for i in range(loop[0], loop[1] + 1)) > 0 : continue
         
@@ -69,8 +74,10 @@ def generate_preproteins(pose, loop, ref_seqposes, ref_ca_coords, virtual_residu
         if np.mean(inter_chain_distance2) < 9 or np.mean(inter_chain_distance2) > 13 or max(inter_chain_distance2) > 18: continue
 
         print index, rmsd, np.mean(inter_chain_distance1), np.mean(inter_chain_distance2), max(inter_chain_distance1), max(inter_chain_distance2)
-    
-        assemble_helpers.mutate_residues(pose, list(range(loop[0], loop[1] + 1)), linker['sequence'])
+   
+        selected_linkers.append(linker)
+
+        #assemble_helpers.mutate_residues(pose, list(range(loop[0], loop[1] + 1)), linker['sequence'])
 
         for i in virtual_residues:
             pose.virtual_to_real(i)
@@ -78,8 +85,10 @@ def generate_preproteins(pose, loop, ref_seqposes, ref_ca_coords, virtual_residu
         for i in virtual_residues:
             pose.real_to_virtual(i)
         
-        assemble_helpers.mutate_residues(pose, list(range(loop[0], loop[1] + 1)), ['ALA'] * loop_size)
-        
+        #assemble_helpers.mutate_residues(pose, list(range(loop[0], loop[1] + 1)), ['ALA'] * loop_size)
+       
+    with open(os.path.join(output_path, 'selected_linkers.{0}.{1}.json'.format(loop[0], loop[1])), 'w') as f:
+        json.dump(selected_linkers, f)
 
 def append_alanines(pose, num):
     '''Append num alanines to the end of a pose'''
@@ -218,13 +227,18 @@ def connect_chains(pdb_files, transformation_files, transformation_residue_pairs
 def pilot_make_preproteins():
     pdb_files = [
                 #'data/antiparallel_sheets_3_8/2_2_30_30/sheet.pdb',
-                'data/antiparallel_sheets_3_8/0_0_10_10/sheet.pdb',
+                #'data/antiparallel_sheets_3_8/0_0_10_10/sheet.pdb',
                 #'data/antiparallel_sheets_3_8/4_4_50_50/sheet.pdb',
-                 'data/straight_helices/20/helix.pdb']
+                'data/morphing/sheet_120.pdb', 
+                'data/straight_helices/20/helix.pdb']
     transformation_files = ['database/transformations/sheet_helix_transformation.json']
     transformation_residue_pairs = [((0, 'B', 13), (1, 'A', 13))]
+    #movable_connections = [2] 
+    #connections = [((0, 'B', 16), (0, 'A', 1), 2),
+    #               ((0, 'C', 24), (0,'B', 9), 2),
+    #               ((1, 'A', 20), (0,'C', 17), 4)]
     movable_connections = [2] 
-    connections = [((0, 'B', 16), (0, 'A', 1), 2),
+    connections = [((0, 'A', 8), (1, 'A', 1), 4),
                    ((0, 'C', 24), (0,'B', 9), 2),
                    ((1, 'A', 20), (0,'C', 17), 4)]
     root_after_movable_connection = True
@@ -233,42 +247,67 @@ def pilot_make_preproteins():
     pose, connections_after_adding_linkers = connect_chains(pdb_files, transformation_files, 
             transformation_residue_pairs, connections)
     
-    unmovable_connections = [connections_after_adding_linkers[i] for i in range(len(connections)) if not i in movable_connections]
-    assemble_helpers.fast_loop_build(pose, unmovable_connections)
+    #loop_grafting.graft_loop(pose, (32, 35), 'debug/linker_strand_strand_2.json')
+
+    #unmovable_connections = [connections_after_adding_linkers[i] for i in range(len(connections)) if not i in movable_connections]
+    #assemble_helpers.fast_loop_build(pose, unmovable_connections)
     
-    ref_helix_cas = [xyz_to_np_array(pose.residue(i).xyz("CA")) for i in range(1, 20)]
+    #ref_helix_cas = [xyz_to_np_array(pose.residue(i).xyz("CA")) for i in range(1, 20)]
+    ref_helix_cas = [xyz_to_np_array(pose.residue(i).xyz("CA")) for i in range(13, 33)]
 
     # Set the root of the fold tree
 
-    if root_after_movable_connection:
-        root_residue = connections_after_adding_linkers[movable_connections[0]][1] + 1
-    else:
-        root_residue = connections_after_adding_linkers[movable_connections[0]][0] - 1
+    #if root_after_movable_connection:
+    #    root_residue = connections_after_adding_linkers[movable_connections[0]][1] + 1
+    #else:
+    #    root_residue = connections_after_adding_linkers[movable_connections[0]][0] - 1
 
-    ft = rosetta.core.kinematics.FoldTree()
+    #ft = rosetta.core.kinematics.FoldTree()
+    #
+    #if root_residue > 1:
+    #    ft.add_edge(root_residue, 1, -1)
+    #if root_residue < pose.size():
+    #    ft.add_edge(root_residue, pose.size(), -1)
+    #pose.fold_tree(ft)
     
-    if root_residue > 1:
-        ft.add_edge(root_residue, 1, -1)
-    if root_residue < pose.size():
-        ft.add_edge(root_residue, pose.size(), -1)
-    pose.fold_tree(ft)
+    #rosetta.core.conformation.idealize_position(
+    #        connections_after_adding_linkers[movable_connections[0]][1] - 1, pose.conformation())
     
-    rosetta.core.conformation.idealize_position(
-            connections_after_adding_linkers[movable_connections[0]][1] - 1, pose.conformation())
-    
-    #pose.dump_pdb('debug/test.pdb')###DEBUG
-    #exit()
-
-    loop_start = 20
+    #loop_start = 20
+    loop_start = 8
     loop_stop = loop_start + 5
 
     start_time = datetime.datetime.now()
    
-    generate_preproteins(pose, (loop_start, loop_stop),  list(range(1, 20)), ref_helix_cas, [33, 34, 43, 44], 'debug/linker_helix_sheet_4.json', 
-            #'debug')
-            'data/preprotein_3_8_10_10_helix_20')
-            #'data/preprotein_3_8_50_50_helix_20')
+    
+    ft = rosetta.core.kinematics.FoldTree()
+    ft.add_edge(1, 36, -1)
+    ft.add_edge(1, 37, 1)
+    ft.add_edge(37, pose.size(), -1)
+    pose.fold_tree(ft)
+    rosetta.core.conformation.idealize_position(12, pose.conformation())
+    rosetta.core.conformation.idealize_position(13, pose.conformation())
+    
+    #pose.dump_pdb('debug/test.pdb')###DEBUG
+    #exit()
+    
+    generate_movable_linkers(pose, (loop_start, loop_stop),  list(range(13, 33)), ref_helix_cas, [33, 34, 35, 36, 45, 46], 'debug/linker_sheet_helix_4.json', 'debug')
 
+    loop_start = 32
+    loop_stop = loop_start + 5
+
+    ft = rosetta.core.kinematics.FoldTree()
+    ft.add_edge(1, 12, -1)
+    ft.add_edge(1, pose.size(), 1)
+    ft.add_edge(pose.size(), 13 -1)
+    pose.fold_tree(ft)
+    rosetta.core.conformation.idealize_position(36, pose.conformation())
+    rosetta.core.conformation.idealize_position(37, pose.conformation())
+    
+    generate_movable_linkers(pose, (loop_start, loop_stop),  list(range(13, 33)), ref_helix_cas, [9, 10, 11, 12, 45, 46], 'debug/linker_helix_sheet_4.json', 'debug')
+    
+    #generate_movable_linkers(pose, (loop_start, loop_stop),  list(range(1, 20)), ref_helix_cas, [33, 34, 43, 44], 'debug/linker_helix_sheet_4.json', 'debug')
+    
     end_time = datetime.datetime.now()
     run_time = end_time - start_time
     print run_time.total_seconds()
