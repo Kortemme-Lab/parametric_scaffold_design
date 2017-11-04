@@ -86,6 +86,50 @@ def fast_loop_build(pose, loops):
     loop_modeler.apply(pose)
     return loop_modeler.build_stage().was_successful()
 
+def minimization_loop_closing(pose, loops):
+    '''Close the loops of a pose by minimization.'''
+    pose.dump_pdb('debug/before_minimize.pdb')
+    ft = rosetta.core.kinematics.FoldTree()
+    ft.add_edge(1, 14, 1)
+    ft.add_edge(1, 38, 2)
+    ft.add_edge(1, 48, 3)
+    ft.add_edge(1, 12, -1)
+    ft.add_edge(14, 13, -1)
+    ft.add_edge(14, 36, -1)
+    ft.add_edge(38, 37, -1)
+    ft.add_edge(38, 46, -1)
+    ft.add_edge(48, 47, -1)
+    ft.add_edge(48, 54, -1)
+    pose.fold_tree(ft)
+    rosetta.core.pose.correctly_add_cutpoint_variants(pose)
+
+    min_mover = rosetta.protocols.simple_moves.MinMover()
+    mm = rosetta.core.kinematics.MoveMap()
+    mm.set_jump(1, True)
+
+    #mm.set(rosetta.core.id.THETA, True)
+    #mm.set(rosetta.core.id.D, True)
+    for loop in loops:
+        for seqpos in range(loop[0], loop[1] + 1):
+            #print pose.fold_tree().is_cutpoint( seqpos )
+            mm.set_bb(seqpos, True)
+    
+    min_opts = rosetta.core.optimization.MinimizerOptions( "lbfgs_armijo_nonmonotone", 0.01, True )
+
+    sfxn = rosetta.core.scoring.get_score_function()
+    sfxn.set_weight(rosetta.core.scoring.linear_chainbreak, 10)
+    #sfxn = rosetta.core.scoring.ScoreFunctionFactory.create_score_function("ref2015_cart")
+
+
+    #min_mover.cartesian(True);
+    min_mover.score_function(sfxn)
+    min_mover.movemap(mm)
+    min_mover.min_options(min_opts)
+
+    min_mover.apply(pose)
+
+    fast_loop_build(pose, loops)
+
 def mutate_residues(pose, res_list, aa_list):
     '''Mutate a list of residues. The list of AAs could
     either be 1 letter code or 3 letter code.

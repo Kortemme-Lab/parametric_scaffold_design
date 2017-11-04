@@ -246,6 +246,11 @@ def pilot_make_preproteins():
 
     pose, connections_after_adding_linkers = connect_chains(pdb_files, transformation_files, 
             transformation_residue_pairs, connections)
+   
+    assemble_helpers.minimization_loop_closing(pose, [(8, 13), (32, 37), (44, 47)])
+
+    pose.dump_pdb('debug/test.pdb')###DEBUG
+    exit()
     
     #loop_grafting.graft_loop(pose, (32, 35), 'debug/linker_strand_strand_2.json')
 
@@ -288,10 +293,7 @@ def pilot_make_preproteins():
     rosetta.core.conformation.idealize_position(12, pose.conformation())
     rosetta.core.conformation.idealize_position(13, pose.conformation())
     
-    #pose.dump_pdb('debug/test.pdb')###DEBUG
-    #exit()
-    
-    generate_movable_linkers(pose, (loop_start, loop_stop),  list(range(13, 33)), ref_helix_cas, [33, 34, 35, 36, 45, 46], 'debug/linker_sheet_helix_4.json', 'debug')
+    #generate_movable_linkers(pose, (loop_start, loop_stop),  list(range(13, 33)), ref_helix_cas, [33, 34, 35, 36, 45, 46], 'debug/linker_sheet_helix_4.json', 'debug')
 
     loop_start = 32
     loop_stop = loop_start + 5
@@ -299,7 +301,7 @@ def pilot_make_preproteins():
     ft = rosetta.core.kinematics.FoldTree()
     ft.add_edge(1, 12, -1)
     ft.add_edge(1, pose.size(), 1)
-    ft.add_edge(pose.size(), 13 -1)
+    ft.add_edge(pose.size(), 13, -1)
     pose.fold_tree(ft)
     rosetta.core.conformation.idealize_position(36, pose.conformation())
     rosetta.core.conformation.idealize_position(37, pose.conformation())
